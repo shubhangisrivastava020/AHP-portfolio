@@ -190,12 +190,16 @@ def validate():
 
 @app.route('/api/forecast')
 def forecast():
-    from validation_engine import ForecastEngine
-    fund = request.args.get('fund', 'CalPERS')
-    fe   = ForecastEngine()
-    data = fe.forecast_allocations(fund, [2026, 2027, 2028, 2029, 2030])
-    attr = fe.compute_returns_attribution(fund)
-    return jsonify({'forecast': data, 'attribution': attr})
+    try:
+        from validation_engine import ForecastEngine
+        fund = request.args.get('fund', 'CalPERS')
+        fe   = ForecastEngine()
+        data = fe.forecast_allocations(fund, [2026, 2027, 2028, 2029, 2030])
+        attr = fe.compute_returns_attribution(fund)
+        return jsonify({'forecast': data, 'attribution': attr})
+    except Exception as e:
+        import traceback
+        return jsonify({'error': str(e), 'traceback': traceback.format_exc()}), 500
 
 
 @app.route('/api/sensitivity', methods=['POST'])
@@ -292,76 +296,77 @@ def benchmark():
     for all 8 pension funds. Returns data needed for side-by-side charts,
     error heatmap, and scatter plot.
     """
-    from validation_engine import PensionFundValidator, _build_model_for_fund
-    import numpy as np
+    try:
+        from validation_engine import PensionFundValidator, _build_model_for_fund
+        import numpy as np
 
-    fund_filter = request.args.get('fund', None)  # optional single fund
+        fund_filter = request.args.get('fund', None)
 
-    validator = PensionFundValidator()
-    results = validator.validate_all()
+        validator = PensionFundValidator()
+        results = validator.validate_all()
 
-    # Build rich per-fund, per-year comparison
-    funds_data = {}
-    for fund_name, fund_meta in PENSION_FUND_ALLOCATIONS.items():
-        if fund_filter and fund_name != fund_filter:
-            continue
+        funds_data = {}
+        for fund_name, fund_meta in PENSION_FUND_ALLOCATIONS.items():
+            if fund_filter and fund_name != fund_filter:
+                continue
 
-        fund_results = [r for r in results if r.fund_name == fund_name]
-        years = sorted([r.year for r in fund_results])
+            fund_results = [r for r in results if r.fund_name == fund_name]
+            years = sorted([r.year for r in fund_results])
 
-        year_data = {}
-        for r in sorted(fund_results, key=lambda x: x.year):
-            year_data[r.year] = {
-                'model':       {a: round(r.model_weights.get(a, 0), 4) for a in ASSET_CLASSES},
-                'actual':      {a: round(r.actual_weights.get(a, 0), 4) for a in ASSET_CLASSES},
-                'mae':         round(r.mae * 100, 3),
-                'rmse':        round(r.rmse * 100, 3),
-                'correlation': round(r.correlation, 4),
-                'grade':       r.grade,
-                'scenario':    r.scenario,
-                'max_dev_asset': r.max_deviation_asset,
-                'max_dev_pct':   round(r.max_deviation_pct * 100, 2),
+            year_data = {}
+            for r in sorted(fund_results, key=lambda x: x.year):
+                year_data[r.year] = {
+                    'model':         {a: round(r.model_weights.get(a, 0), 4) for a in ASSET_CLASSES},
+                    'actual':        {a: round(r.actual_weights.get(a, 0), 4) for a in ASSET_CLASSES},
+                    'mae':           round(r.mae * 100, 3),
+                    'rmse':          round(r.rmse * 100, 3),
+                    'correlation':   round(r.correlation, 4),
+                    'grade':         r.grade,
+                    'scenario':      r.scenario,
+                    'max_dev_asset': r.max_deviation_asset,
+                    'max_dev_pct':   round(r.max_deviation_pct * 100, 2),
+                }
+
+            asset_errors = {}
+            for asset in ASSET_CLASSES:
+                errs = [abs(year_data[y]['model'][asset] - year_data[y]['actual'][asset]) * 100
+                        for y in years if y in year_data]
+                asset_errors[asset] = {
+                    'mean_error': round(float(np.mean(errs)), 3) if errs else 0,
+                    'max_error':  round(float(np.max(errs)), 3) if errs else 0,
+                }
+
+            funds_data[fund_name] = {
+                'meta': {
+                    'description':    fund_meta.get('description', ''),
+                    'aum':            fund_meta.get('AUM_USD_billions', 0),
+                    'funded_ratio':   fund_meta.get('funded_ratio_pct', 0),
+                    'horizon':        fund_meta.get('horizon', ''),
+                    'risk_tolerance': fund_meta.get('risk_tolerance', ''),
+                },
+                'years':        years,
+                'year_data':    year_data,
+                'asset_errors': asset_errors,
+                'summary':      validator.fund_summaries.get(fund_name, {}),
             }
 
-        # Asset-level errors across years
-        asset_errors = {}
-        for asset in ASSET_CLASSES:
-            errs = [abs(year_data[y]['model'][asset] - year_data[y]['actual'][asset]) * 100
-                    for y in years if y in year_data]
-            asset_errors[asset] = {
-                'mean_error': round(float(np.mean(errs)), 3) if errs else 0,
-                'max_error':  round(float(np.max(errs)), 3) if errs else 0,
-            }
+        all_funds = list(funds_data.keys())
+        heatmap = []
+        for fund in all_funds:
+            row = [funds_data[fund]['asset_errors'].get(a, {}).get('mean_error', 0)
+                   for a in ASSET_CLASSES]
+            heatmap.append(row)
 
-        funds_data[fund_name] = {
-            'meta': {
-                'description':   fund_meta.get('description', ''),
-                'aum':           fund_meta.get('AUM_USD_billions', 0),
-                'funded_ratio':  fund_meta.get('funded_ratio_pct', 0),
-                'horizon':       fund_meta.get('horizon', ''),
-                'risk_tolerance': fund_meta.get('risk_tolerance', ''),
-            },
-            'years':        years,
-            'year_data':    year_data,
-            'asset_errors': asset_errors,
-            'summary': validator.fund_summaries.get(fund_name, {}),
-        }
-
-    # Build error heatmap matrix: funds × assets (mean absolute error %)
-    all_funds = list(funds_data.keys())
-    heatmap = []
-    for fund in all_funds:
-        row = [funds_data[fund]['asset_errors'].get(a, {}).get('mean_error', 0)
-               for a in ASSET_CLASSES]
-        heatmap.append(row)
-
-    return jsonify({
-        'funds':         funds_data,
-        'fund_list':     all_funds,
-        'asset_classes': ASSET_CLASSES,
-        'heatmap':       heatmap,
-        'overall':       validator.overall_stats(),
-    })
+        return jsonify({
+            'funds':         funds_data,
+            'fund_list':     all_funds,
+            'asset_classes': ASSET_CLASSES,
+            'heatmap':       heatmap,
+            'overall':       validator.overall_stats(),
+        })
+    except Exception as e:
+        import traceback
+        return jsonify({'error': str(e), 'traceback': traceback.format_exc()}), 500
 
 
 @app.route('/api/practitioner-profiles')
