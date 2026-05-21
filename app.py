@@ -4,7 +4,7 @@ Flask Web Application Backend
 """
 
 import sys, os, json
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'FINAL DELIVERABLE', 'src'))
+sys.path.insert(0, os.path.dirname(__file__))
 
 from flask import Flask, render_template, jsonify, request
 from ahp_engine import (
