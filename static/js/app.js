@@ -380,8 +380,7 @@ async function loadEvidence() {
         <td style="color:var(--red)">${d.max_drawdown.toFixed(1)}</td>
         <td><div class="progress-wrap" style="width:80px"><div class="progress-bar" style="width:${d.liquidity*10}%"></div></div></td>
         <td>${d.avg_correlation.toFixed(2)}</td>
-        <td>${d.sharpe.toFixed(2)}</td>
-        <td>${d.inflation_beta.toFixed(2)}</td>
+        <td style="color:${d.sharpe < 0 ? 'var(--red)' : 'inherit'}">${d.sharpe < 0 ? 'N/A' : d.sharpe.toFixed(2)}</td>
       </tr>`;
     }).join('');
 
@@ -547,6 +546,48 @@ function renderBenchmarkOverview(data) {
       <div class="stat-value" style="color:${k.color}">${k.value}</div>
       <div class="stat-sub">${k.sub}</div>
     </div>`).join('');
+
+  // All competitors in 1 chart
+  const funds = data.fund_list;
+  const maes  = funds.map(f => +((data.funds[f]?.summary?.avg_mae || 0) * 100).toFixed(2));
+  const corrs = funds.map(f => +((data.funds[f]?.summary?.avg_corr || 0)).toFixed(3));
+  if (charts.bmAll) charts.bmAll.destroy();
+  charts.bmAll = new Chart(document.getElementById('bmAllFundsChart').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: funds.map(f => f.split(' ')[0]),
+      datasets: [
+        {
+          label: 'MAE % (left axis)',
+          data: maes,
+          backgroundColor: funds.map((_, i) => FUND_COLORS[i]),
+          borderRadius: 5,
+          yAxisID: 'y',
+        },
+        {
+          label: 'Correlation (right axis)',
+          data: corrs,
+          type: 'line',
+          borderColor: '#10b981',
+          backgroundColor: 'rgba(16,185,129,.1)',
+          borderWidth: 2,
+          pointRadius: 5,
+          tension: .3,
+          fill: false,
+          yAxisID: 'y2',
+        },
+      ],
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins:{ legend:{ labels:{ color:'#e2e8f0', font:{size:10} } } },
+      scales: {
+        x:  { ticks:{color:'#64748b'}, grid:{color:'#1e2d45'} },
+        y:  { ticks:{color:'#64748b', callback:v=>v+'%'}, grid:{color:'#1e2d45'}, title:{display:true,text:'MAE %',color:'#64748b'} },
+        y2: { position:'right', ticks:{color:'#10b981'}, grid:{display:false}, min:0, max:1, title:{display:true,text:'Correlation',color:'#10b981'} },
+      },
+    },
+  });
 }
 
 function renderFundProfiles(data) {
@@ -869,23 +910,36 @@ async function runForecast() {
     const years = Object.keys(af).map(Number).sort();
     const assets = state.constants?.asset_classes || Object.keys(af[years[0]].probability_weighted_allocation);
 
+    // Histogram: distribution of expected portfolio returns across years
+    const returnValues = years.map(y => af[y].portfolio_expected_return_pct);
+    const histBins = [0,2,4,6,8,10,12,14];
+    const histCounts = histBins.slice(0,-1).map((lo, i) => {
+      const hi = histBins[i+1];
+      return returnValues.filter(v => v >= lo && v < hi).length;
+    });
+    const histLabels = histBins.slice(0,-1).map((lo,i) => `${lo}–${histBins[i+1]}%`);
+
     if (charts.fore) charts.fore.destroy();
     charts.fore = new Chart(document.getElementById('foreChart').getContext('2d'), {
       type: 'bar',
       data: {
-        labels: years,
-        datasets: assets.map((a, i) => ({
-          label: a,
-          data:  years.map(y => +(af[y].probability_weighted_allocation[a]*100).toFixed(1)),
-          backgroundColor: COLORS[i], stack: 'alloc',
-        })),
+        labels: histLabels,
+        datasets: [{
+          label: 'Years in return range',
+          data: histCounts,
+          backgroundColor: histCounts.map((_,i) => COLORS[i % COLORS.length]),
+          borderRadius: 6,
+        }],
       },
       options: {
         responsive: true, maintainAspectRatio: false,
-        plugins:{ legend:{ labels:{ color:'#e2e8f0', font:{size:9} } } },
+        plugins:{
+          legend:{ display: false },
+          title:{ display:true, text:'Expected Return Distribution (2026–2030)', color:'#e2e8f0', font:{size:12} },
+        },
         scales: {
-          x:{ stacked:true, ticks:{color:'#64748b'}, grid:{color:'#1e2d45'} },
-          y:{ stacked:true, ticks:{color:'#64748b', callback:v=>v+'%'}, grid:{color:'#1e2d45'} },
+          x:{ ticks:{color:'#64748b'}, grid:{color:'#1e2d45'}, title:{display:true, text:'Return Range', color:'#64748b'} },
+          y:{ ticks:{color:'#64748b', stepSize:1}, grid:{color:'#1e2d45'}, title:{display:true, text:'Number of Years', color:'#64748b'} },
         },
       },
     });
@@ -940,8 +994,8 @@ let saatyOptions   = [];
 let stressState    = {};   // current criteria values being edited
 
 const CRITERIA_PAIRS = [
-  'Return vs Risk', 'Return vs Liquidity', 'Return vs Diversification',
-  'Risk vs Liquidity', 'Risk vs Diversification', 'Liquidity vs Diversification',
+  'Return vs Risk', 'Return vs Liquidity',
+  'Risk vs Liquidity',
 ];
 
 async function initStressTest() {
@@ -969,8 +1023,8 @@ async function initStressTest() {
 function renderCriteriaInputGrid() {
   // Default values = Liberty Bell base
   const defaults = {
-    'Return vs Risk': 2, 'Return vs Liquidity': 5, 'Return vs Diversification': 3,
-    'Risk vs Liquidity': 3, 'Risk vs Diversification': 2, 'Liquidity vs Diversification': 0.5,
+    'Return vs Risk': 2, 'Return vs Liquidity': 5,
+    'Risk vs Liquidity': 3,
   };
   if (!stressState || !Object.keys(stressState).length) stressState = {...defaults};
 
@@ -1481,7 +1535,21 @@ async function sendChat() {
     });
     const data = await r.json();
     if (data.error) throw new Error(data.error);
-    updateMsg(typingId, data.reply);
+    // Typewriter effect — reveal one word at a time
+    const words = data.reply.split(' ');
+    let revealed = '';
+    const el = document.getElementById(typingId);
+    if (el) {
+      el.textContent = '';
+      for (let i = 0; i < words.length; i++) {
+        revealed += (i > 0 ? ' ' : '') + words[i];
+        el.innerHTML = revealed.replace(/\n/g,'<br>');
+        el.parentElement?.parentElement?.scrollIntoView({ behavior:'smooth', block:'end' });
+        await new Promise(r => setTimeout(r, 18));
+      }
+    } else {
+      updateMsg(typingId, data.reply);
+    }
     state.chatHistory.push({ role: 'assistant', content: data.reply });
   } catch(e) {
     updateMsg(typingId, '⚠ Error: ' + e.message);
@@ -1496,6 +1564,18 @@ function clearChat() {
       <div class="msg-bubble">Chat cleared. Ask me anything about your AHP portfolio decisions.</div>
     </div>`;
   state.chatHistory = [];
+}
+
+function resetAdvisor() {
+  // Reset mode selector to ADVISOR, clear chat, clear input
+  const modeEl = document.getElementById('chatMode');
+  if (modeEl) {
+    modeEl.value = 'ADVISOR';
+    document.getElementById('modeDesc').textContent = modeDescs['ADVISOR'];
+  }
+  document.getElementById('chatInput').value = '';
+  clearChat();
+  toast('AI Advisor reset to default', 'success');
 }
 
 let msgCounter = 0;
@@ -1584,13 +1664,6 @@ const SUB_CRIT_DATA = {
       detail: 'Sharpe Ratio = (Return − Risk-Free Rate) / Volatility. A higher Sharpe means more return for each unit of risk. Large Stocks historically achieve Sharpe ~0.7–0.9 in bull markets; Money Market achieves ~0.2 but with near-zero risk. AHP uses this to balance raw return expectations against risk-taking.',
       pensionNote: 'Pension funds should target a portfolio Sharpe Ratio above 0.5. Assets with negative Sharpe (return below risk-free rate) destroy risk-adjusted value and should be limited unless required for diversification.',
       liveKey: 'sharpe', unit: '', weight: '~10% of Return score', better: 'higher', format: v => v?.toFixed(2),
-    },
-    {
-      id: 'inflation_sensitivity', label: 'Inflation Beta', icon: '🌡️',
-      plain: 'How the asset performs when inflation rises.',
-      detail: 'Inflation Beta measures how asset returns co-move with CPI changes. Real assets (commodities, real estate) have high positive inflation beta — they appreciate when prices rise, protecting purchasing power. Government Bonds have negative inflation beta — they lose value in real terms when inflation exceeds expectations.',
-      pensionNote: 'Pension liabilities grow with inflation (CPI-linked benefits). A fund with large inflation-linked obligations must hold assets with positive inflation beta (commodities, TIPS, real estate) to hedge liability growth.',
-      liveKey: 'inflation_beta', unit: '', weight: '~5% of Return score', better: 'higher', format: v => v?.toFixed(2),
     },
   ],
   risk: [

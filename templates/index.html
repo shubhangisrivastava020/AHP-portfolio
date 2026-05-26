@@ -405,7 +405,7 @@
         <div class="table-wrap"><table id="evTable">
           <thead><tr>
             <th>Asset Class</th><th>Proxy ETF</th><th>E[R] %</th><th>Beta</th><th>Vol %</th>
-            <th>Max DD %</th><th>Liquidity</th><th>Avg Corr</th><th>Sharpe</th><th>Infl Beta</th>
+            <th>Max DD %</th><th>Liquidity</th><th>Avg Corr</th><th>Sharpe</th>
           </tr></thead>
           <tbody id="evBody"></tbody>
         </table></div>
@@ -459,6 +459,14 @@
       <div class="section">
         <div class="section-title" style="margin-bottom:14px"><span class="dot"></span>Fund Profiles</div>
         <div id="fundProfileGrid" class="fund-profile-grid"></div>
+      </div>
+
+      <!-- All Funds in 1 Chart -->
+      <div class="section">
+        <div class="card">
+          <div class="card-title">All Competitors — MAE % by Fund (Lower = Better)</div>
+          <div class="chart-wrap" style="height:280px"><canvas id="bmAllFundsChart"></canvas></div>
+        </div>
       </div>
 
       <!-- Error Heatmap -->
@@ -595,7 +603,7 @@
     <div id="foreContent" style="display:none">
       <div class="grid-2 section">
         <div class="card">
-          <div class="card-title">Probability-Weighted Allocations 2026–2030</div>
+          <div class="card-title">Expected Return Distribution (Histogram)</div>
           <div class="chart-wrap" style="height:300px"><canvas id="foreChart"></canvas></div>
         </div>
         <div class="card">
@@ -966,6 +974,7 @@
             <span style="font-size:.85rem;font-weight:600">AI Investment Advisor</span>
             <div style="display:flex;gap:8px;align-items:center">
               <span id="chatModelBadge" style="font-size:.7rem;background:rgba(37,99,235,.15);color:var(--accent2);padding:2px 8px;border-radius:12px;border:1px solid rgba(37,99,235,.3)">claude-sonnet-4-6</span>
+              <button onclick="resetAdvisor()" style="background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);color:#ef4444;font-size:.75rem;padding:2px 10px;border-radius:6px;cursor:pointer">↺ Reset</button>
               <button onclick="clearChat()" style="background:none;border:none;color:var(--muted);font-size:.8rem">Clear</button>
             </div>
           </div>
