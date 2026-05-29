@@ -4,664 +4,770 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AHP Portfolio AI — Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/style.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
-  :root {
-    --bg: #0f172a;
-    --surface: #1e293b;
-    --surface2: #263248;
-    --border: #334155;
-    --text: #f1f5f9;
-    --muted: #94a3b8;
-    --accent: #6366f1;
-    --accent2: #818cf8;
-    --green: #10b981;
-    --red: #ef4444;
-    --amber: #f59e0b;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  /* ── PLATFORM OVERRIDES: cleaner, more corporate ── */
+  body { font-family: 'Inter', -apple-system, sans-serif; }
 
-  /* ── TOP BAR ── */
-  .topbar {
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
+  /* Clean top bar replaces the original nav */
+  .platform-bar {
+    background: #0f172a;
+    border-bottom: 1px solid #1e293b;
     padding: 0 32px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    height: 60px;
+    height: 58px;
     position: sticky;
     top: 0;
-    z-index: 100;
+    z-index: 200;
   }
-  .logo { display: flex; align-items: center; gap: 10px; }
-  .logo-icon { width: 32px; height: 32px; background: linear-gradient(135deg, var(--accent), #2563eb); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
-  .logo-text { font-size: 1rem; font-weight: 700; letter-spacing: -.01em; }
-  .logo-sub { font-size: .7rem; color: var(--muted); font-weight: 400; }
-  .topbar-right { display: flex; align-items: center; gap: 12px; }
-  .api-wrap { display: flex; align-items: center; gap: 8px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 6px 12px; }
-  .api-wrap label { font-size: .72rem; color: var(--muted); white-space: nowrap; }
-  .api-input { background: none; border: none; color: var(--text); font-size: .82rem; width: 200px; outline: none; }
-  .badge-live { background: rgba(16,185,129,.15); color: var(--green); border: 1px solid rgba(16,185,129,.3); border-radius: 20px; font-size: .7rem; padding: 3px 10px; font-weight: 600; }
+  .platform-logo { display: flex; align-items: center; gap: 10px; }
+  .platform-logo-icon { width: 30px; height: 30px; background: linear-gradient(135deg,#6366f1,#2563eb); border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+  .platform-logo-name { font-size: .95rem; font-weight: 700; letter-spacing: -.01em; color: #f1f5f9; }
+  .platform-logo-tag  { font-size: .68rem; color: #64748b; font-weight: 400; }
+  .platform-right { display: flex; align-items: center; gap: 12px; }
+  .platform-api-wrap { display: flex; align-items: center; gap: 8px; background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 7px 13px; }
+  .platform-api-wrap label { font-size: .7rem; color: #64748b; white-space: nowrap; letter-spacing: .04em; font-weight: 600; }
+  .platform-api-wrap input { background: none; border: none; color: #f1f5f9; font-size: .82rem; width: 210px; outline: none; font-family: inherit; }
 
-  /* ── TABS ── */
-  .tabs { display: flex; gap: 4px; padding: 0 32px; background: var(--surface); border-bottom: 1px solid var(--border); }
-  .tab { padding: 14px 20px; font-size: .85rem; font-weight: 500; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; transition: all .2s; white-space: nowrap; }
-  .tab:hover { color: var(--text); }
-  .tab.active { color: var(--accent2); border-bottom-color: var(--accent2); }
+  /* Platform tab bar */
+  .platform-tabs {
+    background: #0f172a;
+    border-bottom: 1px solid #1e293b;
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    overflow-x: auto;
+  }
+  .ptab {
+    padding: 13px 18px;
+    font-size: .83rem;
+    font-weight: 500;
+    color: #64748b;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+    transition: color .2s, border-color .2s;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    background: none;
+    border-left: none;
+    border-right: none;
+    border-top: none;
+  }
+  .ptab:hover { color: #e2e8f0; }
+  .ptab.active { color: #818cf8; border-bottom-color: #818cf8; }
+  .ptab-icon { font-size: .95rem; }
 
-  /* ── MAIN LAYOUT ── */
-  .main { max-width: 1280px; margin: 0 auto; padding: 32px 24px; }
-  .page { display: none; }
-  .page.active { display: block; }
+  /* Run button in top bar */
+  .platform-run {
+    background: linear-gradient(135deg,#6366f1,#2563eb);
+    color: #fff;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 8px;
+    font-size: .85rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: inherit;
+    transition: opacity .2s;
+  }
+  .platform-run:hover { opacity: .88; }
+  .platform-run:disabled { opacity: .5; cursor: not-allowed; }
 
-  /* ── CARDS ── */
-  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 22px; }
-  .card-title { font-size: .8rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 16px; }
+  /* Content area */
+  .platform-content { max-width: 1360px; margin: 0 auto; padding: 28px 24px; }
 
-  /* ── GRID ── */
-  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
-  @media (max-width: 900px) { .grid-2, .grid-4 { grid-template-columns: 1fr; } .grid-3 { grid-template-columns: 1fr 1fr; } }
+  /* Page sections */
+  .ptab-panel { display: none; }
+  .ptab-panel.active { display: block; }
 
-  /* ── CONFIG PANEL ── */
-  .config-panel { background: linear-gradient(135deg, rgba(99,102,241,.08), rgba(37,99,235,.05)); border: 1px solid rgba(99,102,241,.2); border-radius: 16px; padding: 28px; margin-bottom: 28px; }
-  .config-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 6px; }
-  .config-sub { font-size: .82rem; color: var(--muted); margin-bottom: 24px; line-height: 1.6; }
-  .config-fields { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 14px; align-items: end; }
-  @media (max-width: 900px) { .config-fields { grid-template-columns: 1fr 1fr; } }
-  .field label { display: block; font-size: .72rem; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: .04em; font-weight: 600; }
-  .field input, .field select { width: 100%; background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 10px 14px; border-radius: 8px; font-size: .88rem; outline: none; transition: border-color .2s; }
-  .field input:focus, .field select:focus { border-color: var(--accent); }
-  .run-btn { background: linear-gradient(135deg, var(--accent), #2563eb); color: #fff; border: none; padding: 11px 28px; border-radius: 9px; font-size: .9rem; font-weight: 600; cursor: pointer; white-space: nowrap; transition: opacity .2s; display: flex; align-items: center; gap: 8px; height: 42px; }
-  .run-btn:hover { opacity: .9; }
-  .run-btn:disabled { opacity: .5; cursor: not-allowed; }
+  /* Section intro box — friendly explanation at top of each tab */
+  .tab-intro {
+    background: linear-gradient(135deg, rgba(99,102,241,.07), rgba(37,99,235,.04));
+    border: 1px solid rgba(99,102,241,.18);
+    border-radius: 12px;
+    padding: 16px 22px;
+    margin-bottom: 24px;
+    font-size: .84rem;
+    color: #94a3b8;
+    line-height: 1.7;
+  }
+  .tab-intro strong { color: #e2e8f0; }
+  .tab-intro h3 { font-size: .95rem; color: #f1f5f9; margin-bottom: 6px; font-weight: 700; }
 
-  /* ── KPI CARDS ── */
-  .kpi { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; }
-  .kpi-label { font-size: .72rem; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 8px; }
-  .kpi-value { font-size: 1.6rem; font-weight: 700; line-height: 1; margin-bottom: 4px; }
-  .kpi-sub { font-size: .75rem; color: var(--muted); }
+  /* Hide the original nav — we use platform-bar instead */
+  nav { display: none !important; }
+  .hero { display: none !important; }
+  #app { padding-top: 0 !important; }
 
-  /* ── ALLOCATION TABLE ── */
-  .alloc-table { width: 100%; border-collapse: collapse; font-size: .84rem; }
-  .alloc-table th { text-align: left; padding: 10px 14px; font-size: .72rem; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; border-bottom: 1px solid var(--border); font-weight: 600; }
-  .alloc-table td { padding: 11px 14px; border-bottom: 1px solid rgba(51,65,85,.5); }
-  .alloc-table tr:last-child td { border-bottom: none; }
-  .alloc-table tr:hover td { background: rgba(99,102,241,.04); }
-  .bar-cell { display: flex; align-items: center; gap: 10px; }
-  .bar-bg { flex: 1; background: var(--surface2); border-radius: 4px; height: 8px; max-width: 120px; }
-  .bar-fill { height: 8px; border-radius: 4px; background: linear-gradient(90deg, var(--accent), #2563eb); transition: width .6s ease; }
-  .pill { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: .72rem; font-weight: 600; }
-  .pill-green { background: rgba(16,185,129,.15); color: var(--green); border: 1px solid rgba(16,185,129,.3); }
-  .pill-amber { background: rgba(245,158,11,.15); color: var(--amber); border: 1px solid rgba(245,158,11,.3); }
-  .pill-red { background: rgba(239,68,68,.15); color: var(--red); border: 1px solid rgba(239,68,68,.3); }
-  .pill-blue { background: rgba(99,102,241,.15); color: var(--accent2); border: 1px solid rgba(99,102,241,.3); }
-
-  /* ── CHART ── */
-  .chart-wrap { position: relative; height: 280px; }
-
-  /* ── EMPTY STATE ── */
-  .empty-state { text-align: center; padding: 80px 24px; color: var(--muted); }
-  .empty-icon { font-size: 3rem; margin-bottom: 16px; }
-  .empty-title { font-size: 1.1rem; font-weight: 600; color: var(--text); margin-bottom: 8px; }
-  .empty-sub { font-size: .85rem; line-height: 1.7; max-width: 400px; margin: 0 auto; }
-
-  /* ── INSIGHTS ── */
-  .insight { background: var(--surface2); border-radius: 10px; padding: 14px 16px; border-left: 3px solid var(--accent); font-size: .83rem; line-height: 1.6; color: var(--muted); }
-  .insight strong { color: var(--text); }
-  .insights-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  @media (max-width: 700px) { .insights-grid { grid-template-columns: 1fr; } }
-
-  /* ── SPINNER ── */
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .spinner { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,.3); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; display: inline-block; }
-
-  /* ── SECTION SPACER ── */
-  .section { margin-bottom: 24px; }
-  .section-title { font-size: .95rem; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
-  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); display: inline-block; }
-
-  /* ── AI ADVISOR ── */
-  .advisor-layout { display: grid; grid-template-columns: 300px 1fr; gap: 20px; height: calc(100vh - 200px); min-height: 500px; }
-  @media (max-width: 900px) { .advisor-layout { grid-template-columns: 1fr; height: auto; } }
-  .advisor-sidebar { display: flex; flex-direction: column; gap: 14px; }
-  .mode-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; cursor: pointer; transition: all .2s; }
-  .mode-card:hover { border-color: var(--accent); }
-  .mode-card.selected { border-color: var(--accent); background: rgba(99,102,241,.08); }
-  .mode-icon { font-size: 1.4rem; margin-bottom: 6px; }
-  .mode-name { font-size: .85rem; font-weight: 700; margin-bottom: 4px; }
-  .mode-desc { font-size: .75rem; color: var(--muted); line-height: 1.5; }
-  .chat-container { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; display: flex; flex-direction: column; overflow: hidden; }
-  .chat-header { padding: 14px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-  .chat-header-title { font-size: .88rem; font-weight: 600; }
-  .chat-header-right { display: flex; gap: 8px; }
-  .chat-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 14px; min-height: 300px; max-height: 55vh; }
-  .msg { display: flex; gap: 10px; }
-  .msg.user { flex-direction: row-reverse; }
-  .avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: .72rem; font-weight: 700; flex-shrink: 0; }
-  .avatar-ai { background: linear-gradient(135deg, var(--accent), #2563eb); }
-  .avatar-user { background: var(--surface2); border: 1px solid var(--border); color: var(--muted); }
-  .bubble { padding: 10px 14px; border-radius: 12px; font-size: .84rem; line-height: 1.6; max-width: 80%; }
-  .bubble-ai { background: var(--surface2); border: 1px solid var(--border); border-top-left-radius: 4px; }
-  .bubble-user { background: rgba(99,102,241,.2); border: 1px solid rgba(99,102,241,.3); border-top-right-radius: 4px; }
-  .chat-footer { padding: 12px 14px; border-top: 1px solid var(--border); display: flex; gap: 10px; }
-  .chat-input { flex: 1; background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 10px 14px; border-radius: 9px; font-size: .85rem; resize: none; outline: none; font-family: inherit; height: 44px; transition: border-color .2s; }
-  .chat-input:focus { border-color: var(--accent); }
-  .send-btn { background: var(--accent); color: #fff; border: none; padding: 0 18px; border-radius: 9px; font-size: .85rem; font-weight: 600; cursor: pointer; transition: opacity .2s; white-space: nowrap; }
-  .send-btn:hover { opacity: .9; }
-  .send-btn:disabled { opacity: .5; }
-  .quick-btns { padding: 10px 14px; border-top: 1px solid var(--border); display: flex; gap: 8px; flex-wrap: wrap; }
-  .quick-btn { background: var(--surface2); border: 1px solid var(--border); color: var(--muted); padding: 5px 12px; border-radius: 20px; font-size: .75rem; cursor: pointer; transition: all .2s; }
-  .quick-btn:hover { border-color: var(--accent); color: var(--accent2); }
-  .context-badge { font-size: .72rem; color: var(--muted); padding: 6px 12px; background: var(--surface2); border-radius: 6px; border: 1px solid var(--border); }
-  .context-badge.has-model { color: var(--green); }
-
-  /* ── SCROLL ── */
-  ::-webkit-scrollbar { width: 6px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-
-  /* ── MONTE CARLO SECTION ── */
-  .mc-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
-  @media (max-width: 700px) { .mc-grid { grid-template-columns: 1fr 1fr; } }
-  .mc-stat { background: var(--surface2); border-radius: 10px; padding: 14px; text-align: center; }
-  .mc-stat-val { font-size: 1.4rem; font-weight: 700; }
-  .mc-stat-lbl { font-size: .72rem; color: var(--muted); margin-top: 4px; }
-
-  /* ── TOAST ── */
-  #toast { position: fixed; bottom: 28px; right: 28px; background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 12px 20px; border-radius: 10px; font-size: .84rem; z-index: 999; opacity: 0; transform: translateY(10px); transition: all .3s; pointer-events: none; }
-  #toast.show { opacity: 1; transform: translateY(0); }
-  #toast.error { border-color: rgba(239,68,68,.5); color: var(--red); }
+  /* Tab panels use our class, not the original */
+  .tab-panel { display: none !important; }
 </style>
 </head>
 <body>
+<div id="app">
 
-<!-- TOP BAR -->
-<div class="topbar">
-  <div class="logo">
-    <div class="logo-icon">⬡</div>
+<!-- ── TOP BAR ────────────────────────────────────────── -->
+<div class="platform-bar">
+  <div class="platform-logo">
+    <div class="platform-logo-icon">⬡</div>
     <div>
-      <div class="logo-text">AHP Portfolio AI</div>
-      <div class="logo-sub">Institutional Allocation Platform</div>
+      <div class="platform-logo-name">AHP Portfolio AI</div>
+      <div class="platform-logo-tag">Institutional Allocation Platform</div>
     </div>
   </div>
-  <div class="topbar-right">
-    <div class="api-wrap">
+  <div class="platform-right">
+    <div class="platform-api-wrap">
       <label>API KEY</label>
-      <input class="api-input" type="password" id="pApiKey" placeholder="sk-ant-...">
+      <input type="password" id="apiKey" placeholder="Anthropic API key (for AI Advisor)">
     </div>
-    <span class="badge-live">● LIVE DATA</span>
+    <button class="platform-run" id="runBtn" onclick="runModel()">
+      <span id="runBtnText">▶ Run Model</span>
+    </button>
   </div>
 </div>
 
-<!-- TABS -->
-<div class="tabs">
-  <div class="tab active" onclick="switchTab('dashboard')">📊 Dashboard</div>
-  <div class="tab" onclick="switchTab('advisor')">🤖 AI Advisor</div>
+<!-- ── TABS ──────────────────────────────────────────── -->
+<div class="platform-tabs">
+  <button class="ptab active" onclick="pShowTab('dashboard')"><span class="ptab-icon">📊</span>Dashboard</button>
+  <button class="ptab" onclick="pShowTab('hierarchy')"><span class="ptab-icon">🌳</span>AHP Hierarchy</button>
+  <button class="ptab" onclick="pShowTab('evidence')"><span class="ptab-icon">📡</span>Live Evidence</button>
+  <button class="ptab" onclick="pShowTab('benchmark')"><span class="ptab-icon">🏆</span>Benchmark</button>
+  <button class="ptab" onclick="pShowTab('forecast')"><span class="ptab-icon">🔮</span>Forecast</button>
+  <button class="ptab" onclick="pShowTab('chatbot')"><span class="ptab-icon">🤖</span>AI Advisor</button>
 </div>
 
-<!-- MAIN -->
-<div class="main">
+<!-- ── CONTENT ────────────────────────────────────────── -->
+<div class="platform-content">
 
-  <!-- ────────── DASHBOARD ────────── -->
-  <div class="page active" id="page-dashboard">
+  <!-- ══ DASHBOARD ══════════════════════════════════════ -->
+  <div class="ptab-panel active" id="ptab-dashboard">
+    <div class="tab-intro">
+      <h3>Portfolio Dashboard</h3>
+      Configure your fund details below, then click <strong>▶ Run Model</strong> (top right) to generate an AI-powered AHP allocation across 7 asset classes with Monte Carlo risk analysis.
+    </div>
 
-    <!-- Config Panel -->
-    <div class="config-panel">
-      <div class="config-title">Configure Your Portfolio</div>
-      <div class="config-sub">Enter your fund details below and click Run to generate an AI-powered AHP allocation recommendation.</div>
-      <div class="config-fields">
-        <div class="field">
-          <label>Fund Name</label>
-          <input type="text" id="pFundName" value="My Pension Fund" placeholder="e.g. Liberty Bell Fund">
+    <!-- Config strip -->
+    <div class="card section" style="padding:20px 24px">
+      <div class="card-title">Fund Configuration</div>
+      <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:14px;align-items:end">
+        <div>
+          <label style="display:block;font-size:.72rem;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em;font-weight:600">Fund Name</label>
+          <input class="form-control" id="cfgFund" value="Liberty Bell Pension Fund" placeholder="Your fund name">
         </div>
-        <div class="field">
-          <label>AUM ($ Billions)</label>
-          <input type="number" id="pAum" value="3.2" step="0.1" min="0.1">
+        <div>
+          <label style="display:block;font-size:.72rem;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em;font-weight:600">AUM ($B)</label>
+          <input class="form-control" id="cfgAum" type="number" value="3.2" step="0.1" min="0.1">
         </div>
-        <div class="field">
-          <label>Funded Ratio %</label>
-          <input type="number" id="pFunded" value="87" step="1" min="1" max="200">
+        <div>
+          <label style="display:block;font-size:.72rem;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em;font-weight:600">Funded Ratio %</label>
+          <input class="form-control" id="cfgFunded" type="number" value="87" step="1" min="1" max="200">
         </div>
-        <div class="field">
-          <label>Market Scenario</label>
-          <select id="pScenario">
+        <div>
+          <label style="display:block;font-size:.72rem;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em;font-weight:600">Scenario</label>
+          <select class="form-control" id="cfgScenario">
             <option>Steady Growth</option>
             <option>Bull Market</option>
             <option>Stagflation</option>
             <option>Deflation</option>
           </select>
         </div>
-        <div class="field">
-          <label>&nbsp;</label>
-          <button class="run-btn" id="pRunBtn" onclick="pRunModel()">
-            <span id="pRunText">▶ Run Model</span>
-          </button>
+        <div>
+          <label style="display:block;font-size:.72rem;color:transparent;margin-bottom:5px">Run</label>
+          <button class="run-btn" onclick="runModel()" style="width:100%">▶ Run</button>
         </div>
       </div>
     </div>
 
     <!-- Empty state -->
-    <div id="pEmpty" class="empty-state">
-      <div class="empty-icon">📈</div>
-      <div class="empty-title">Ready to Allocate</div>
-      <div class="empty-sub">Configure your fund above and click <strong>Run Model</strong> to get your AI-powered portfolio allocation across 7 asset classes.</div>
+    <div id="dashEmpty" class="empty">
+      <div class="icon">📈</div>
+      <div style="font-size:1.05rem;font-weight:600;color:var(--text);margin-bottom:8px">Ready to Generate Your Allocation</div>
+      <div style="font-size:.85rem;color:var(--muted);max-width:440px;margin:0 auto;line-height:1.7">Configure your fund above and click <strong>▶ Run Model</strong> to get a research-validated portfolio allocation with Monte Carlo risk analysis.</div>
+      <button class="run-btn" onclick="runModel()" style="margin-top:20px">▶ Run Model Now</button>
     </div>
 
     <!-- Results -->
-    <div id="pResults" style="display:none">
+    <div id="dashResults" style="display:none">
 
-      <!-- KPI Row -->
-      <div class="grid-4 section" id="pKpiRow"></div>
+      <!-- KPI strip -->
+      <div class="grid-4 section" id="dashKPIs" style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px"></div>
 
-      <!-- Main charts -->
+      <!-- Charts row -->
       <div class="grid-2 section">
         <div class="card">
-          <div class="card-title">Asset Allocation</div>
-          <div class="chart-wrap"><canvas id="pDonut"></canvas></div>
+          <div class="card-title">Asset Allocation — Constrained Weights</div>
+          <div class="chart-wrap" style="height:300px"><canvas id="allocChart"></canvas></div>
         </div>
         <div class="card">
-          <div class="card-title">Allocation Breakdown by Asset Class</div>
-          <div class="chart-wrap"><canvas id="pBar"></canvas></div>
+          <div class="card-title">Dollar Allocation ($B)</div>
+          <div class="chart-wrap" style="height:300px"><canvas id="dollarChart"></canvas></div>
         </div>
       </div>
 
-      <!-- Allocation Table -->
-      <div class="card section">
-        <div class="card-title">Portfolio Allocation — Full Detail</div>
-        <table class="alloc-table">
-          <thead>
-            <tr>
-              <th>Asset Class</th>
-              <th>Allocation %</th>
-              <th>$ Amount</th>
-              <th>Weight</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody id="pAllocBody"></tbody>
-        </table>
-      </div>
-
-      <!-- Monte Carlo Summary -->
-      <div class="card section">
-        <div class="card-title">Monte Carlo Risk Analysis — 1,000 Simulations</div>
-        <div class="mc-grid" id="pMcGrid"></div>
-      </div>
-
-      <!-- AI Insights -->
-      <div class="section">
-        <div class="section-title"><span class="dot"></span>Model Insights</div>
-        <div class="insights-grid" id="pInsights"></div>
-      </div>
-
-    </div><!-- /pResults -->
-  </div><!-- /dashboard -->
-
-
-  <!-- ────────── AI ADVISOR ────────── -->
-  <div class="page" id="page-advisor">
-    <div class="advisor-layout">
-
-      <!-- Sidebar: mode selector -->
-      <div class="advisor-sidebar">
-        <div class="card-title" style="padding: 0 4px">Select Advisor Mode</div>
-
-        <div class="mode-card selected" onclick="setMode('ADVISOR')" id="mode-ADVISOR">
-          <div class="mode-icon">🎯</div>
-          <div class="mode-name">Advisor</div>
-          <div class="mode-desc">Get exact dollar allocations and clear reasoning for every decision.</div>
-        </div>
-
-        <div class="mode-card" onclick="setMode('CHALLENGE')" id="mode-CHALLENGE">
-          <div class="mode-icon">⚔️</div>
-          <div class="mode-name">Challenge</div>
-          <div class="mode-desc">AI argues against your choices using empirical data — stress-tests your thinking.</div>
-        </div>
-
-        <div class="mode-card" onclick="setMode('COACH')" id="mode-COACH">
-          <div class="mode-icon">🎓</div>
-          <div class="mode-name">Coach</div>
-          <div class="mode-desc">Socratic questions to guide your decision without giving direct answers.</div>
-        </div>
-
-        <div class="mode-card" onclick="setMode('FORECAST')" id="mode-FORECAST">
-          <div class="mode-icon">🔮</div>
-          <div class="mode-name">Forecast</div>
-          <div class="mode-desc">Stress-test your allocation under 5 macro scenarios for 2026–2030.</div>
-        </div>
-
-        <div id="pContextBadge" class="context-badge">No model run yet</div>
-      </div>
-
-      <!-- Chat -->
-      <div class="chat-container">
-        <div class="chat-header">
-          <div class="chat-header-title">AI Investment Advisor <span style="font-size:.72rem;color:var(--muted);font-weight:400;margin-left:6px" id="pModeBadge">ADVISOR mode</span></div>
-          <div class="chat-header-right">
-            <button onclick="pResetChat()" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);color:#ef4444;padding:4px 12px;border-radius:6px;font-size:.75rem;cursor:pointer">↺ Reset</button>
-            <button onclick="pClearChat()" style="background:none;border:none;color:var(--muted);font-size:.8rem;cursor:pointer">Clear</button>
+      <!-- Allocation tables -->
+      <div class="grid-2 section">
+        <div class="card">
+          <div class="card-title">Portfolio Weights</div>
+          <div class="table-wrap">
+            <table><thead><tr><th>Asset Class</th><th>Weight %</th><th>Bar</th></tr></thead>
+            <tbody id="allocBody"></tbody></table>
           </div>
         </div>
-
-        <div class="quick-btns">
-          <button class="quick-btn" onclick="pQuick('How much should I invest in each asset class?')">💰 How to allocate?</button>
-          <button class="quick-btn" onclick="pQuick('What is the biggest risk in my portfolio?')">⚠️ Key risks?</button>
-          <button class="quick-btn" onclick="pQuick('How does my allocation compare to CalPERS and APG?')">🏦 Compare to peers</button>
-          <button class="quick-btn" onclick="pQuick('Explain the AHP methodology in simple terms.')">📖 Explain the model</button>
+        <div class="card">
+          <div class="card-title">Dollar Allocation</div>
+          <div class="table-wrap">
+            <table><thead><tr><th>Asset Class</th><th>Amount ($B)</th><th>Bar</th></tr></thead>
+            <tbody id="allocDollarBody"></tbody></table>
+          </div>
         </div>
+      </div>
 
-        <div class="chat-body" id="pChatBody">
-          <div class="msg">
-            <div class="avatar avatar-ai">AI</div>
-            <div class="bubble bubble-ai">
-              Hello! I'm your AI Investment Advisor powered by Claude and the AHP framework.<br><br>
-              To get personalised recommendations:<br>
-              1. Enter your Anthropic API key in the top bar<br>
-              2. Run the model on the <strong>Dashboard</strong> tab<br>
-              3. Then ask me anything about your allocation
+      <!-- Monte Carlo -->
+      <div id="mcEmpty" class="empty" style="display:none"><div class="icon">🎲</div>Monte Carlo running…</div>
+      <div id="mcResults" style="display:none">
+        <div class="section-title" style="margin-bottom:14px"><span class="dot"></span>Monte Carlo Risk Analysis — 1,000 Simulations</div>
+        <div id="mcGrid" class="grid-4 section" style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px"></div>
+        <div id="mcCharts" class="grid-2 section"></div>
+      </div>
+
+      <!-- Advanced Analysis (collapsible) -->
+      <div class="card section">
+        <div class="section-collapse-header" onclick="toggleSection('advancedAnalysis',this)" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between">
+          <div class="card-title" style="margin:0">▶ Advanced Analysis — AHP Matrices & Consistency</div>
+          <span style="color:var(--muted);font-size:.8rem">Click to expand</span>
+        </div>
+        <div id="advancedAnalysis" style="display:none;margin-top:16px">
+          <div class="grid-2 section">
+            <div>
+              <div style="font-size:.78rem;color:var(--muted);margin-bottom:8px;font-weight:600">Select Matrix</div>
+              <select class="form-control" id="matrixSelect" onchange="renderMatrix(this.value)" style="margin-bottom:14px">
+                <option value="Criteria">Criteria (4×4)</option>
+                <option value="Actors">Actors (3×3)</option>
+                <option value="Horizon">Horizon (3×3)</option>
+                <option value="Scenarios">Scenarios (4×4)</option>
+              </select>
+              <div id="matrixTable" class="table-wrap"></div>
             </div>
+            <div id="crResults"></div>
           </div>
-        </div>
-
-        <div class="chat-footer">
-          <textarea class="chat-input" id="pChatInput" placeholder="Ask about your portfolio..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();pSendChat()}"></textarea>
-          <button class="send-btn" onclick="pSendChat()" id="pSendBtn">Send</button>
         </div>
       </div>
 
     </div>
-  </div><!-- /advisor -->
+  </div>
 
-</div><!-- /main -->
+  <!-- ══ HIERARCHY ══════════════════════════════════════ -->
+  <div class="ptab-panel" id="ptab-hierarchy">
+    <div class="tab-intro">
+      <h3>AHP Decision Hierarchy</h3>
+      The Analytic Hierarchy Process structures portfolio decisions as a <strong>6-level tree</strong>: Goal → Actors → Horizon → Scenarios → Criteria → Asset Classes. Click any node to explore its role, data, and how it shapes the final allocation.
+    </div>
 
+    <!-- Interactive tree -->
+    <div class="card section">
+      <div class="card-title">Interactive Decision Hierarchy — Click any node for details</div>
+      <div class="hierarchy-wrap" id="hierarchyTree">
+        <div style="color:var(--muted);font-size:.84rem;padding:20px 0">Loading hierarchy…</div>
+      </div>
+    </div>
+
+    <!-- Sub-criteria deep dive -->
+    <div class="card section">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:12px">
+        <div>
+          <div class="card-title" style="margin-bottom:4px">Sub-Criteria Deep Dive</div>
+          <div style="font-size:.8rem;color:var(--muted)">Each criterion is broken into finer components. Click a card to understand how each sub-criterion shapes the final allocation.</div>
+        </div>
+        <div class="subcrit-tabs">
+          <button class="subcrit-tab active" onclick="switchSubCritTab('return',this)">📈 Return (5)</button>
+          <button class="subcrit-tab" onclick="switchSubCritTab('risk',this)">🛡️ Risk (6)</button>
+          <button class="subcrit-tab" onclick="switchSubCritTab('liquidity',this)">💧 Liquidity (4)</button>
+          <button class="subcrit-tab" onclick="switchSubCritTab('diversification',this)">🔗 Diversification (4)</button>
+        </div>
+      </div>
+      <div id="subCritCards">
+        <div style="color:var(--muted);font-size:.84rem;padding:16px 0">Select a group above to explore sub-criteria…</div>
+      </div>
+    </div>
+
+    <!-- How it works — step by step -->
+    <div class="card section">
+      <div class="card-title">How the AHP Model Works — Step by Step</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0;border:1px solid var(--border);border-radius:10px;overflow:hidden">
+        <div style="padding:16px;border-right:1px solid var(--border)">
+          <div style="font-size:.67rem;text-transform:uppercase;letter-spacing:.08em;font-weight:700;color:var(--muted);margin-bottom:8px">Step 1</div>
+          <div style="font-size:.85rem;font-weight:600;color:var(--text);margin-bottom:6px">Live Evidence</div>
+          <div style="font-size:.76rem;color:var(--muted);line-height:1.6">Real market data fetched: β, σ, Max Drawdown, Expected Return, Dividend Yield for all 7 asset classes.</div>
+        </div>
+        <div style="padding:16px;border-right:1px solid var(--border)">
+          <div style="font-size:.67rem;text-transform:uppercase;letter-spacing:.08em;font-weight:700;color:var(--muted);margin-bottom:8px">Step 2</div>
+          <div style="font-size:.85rem;font-weight:600;color:var(--text);margin-bottom:6px">Pairwise Matrices</div>
+          <div style="font-size:.76rem;color:var(--muted);line-height:1.6">AI compares each asset pair on every sub-criterion. "Is Large Stocks safer than Small Stocks on Volatility?" — fills 7×7 matrices.</div>
+        </div>
+        <div style="padding:16px;border-right:1px solid var(--border)">
+          <div style="font-size:.67rem;text-transform:uppercase;letter-spacing:.08em;font-weight:700;color:var(--muted);margin-bottom:8px">Step 3</div>
+          <div style="font-size:.85rem;font-weight:600;color:var(--text);margin-bottom:6px">Criteria Scores</div>
+          <div style="font-size:.76rem;color:var(--muted);line-height:1.6">Sub-criteria scores are synthesised into Return, Risk, Liquidity, and Diversification scores per asset using the geometric mean method.</div>
+        </div>
+        <div style="padding:16px;border-right:1px solid var(--border)">
+          <div style="font-size:.67rem;text-transform:uppercase;letter-spacing:.08em;font-weight:700;color:var(--muted);margin-bottom:8px">Step 4</div>
+          <div style="font-size:.85rem;font-weight:600;color:var(--text);margin-bottom:6px">Criteria Weighting</div>
+          <div style="font-size:.76rem;color:var(--muted);line-height:1.6">The 4 criteria are compared pairwise. Return ≈ 40%, Risk ≈ 35%, Liquidity ≈ 15%, Diversification ≈ 10%.</div>
+        </div>
+        <div style="padding:16px">
+          <div style="font-size:.67rem;text-transform:uppercase;letter-spacing:.08em;font-weight:700;color:var(--muted);margin-bottom:8px">Step 5</div>
+          <div style="font-size:.85rem;font-weight:600;color:#818cf8;margin-bottom:6px">Final Allocation</div>
+          <div style="font-size:.76rem;color:var(--muted);line-height:1.6">AHP synthesises all levels into portfolio weights, applies policy constraints, and validates with 1,000 Monte Carlo simulations.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ EVIDENCE ════════════════════════════════════════ -->
+  <div class="ptab-panel" id="ptab-evidence">
+    <div class="tab-intro">
+      <h3>Live Financial Evidence</h3>
+      Real-time market data powering the AHP model. Each row shows key metrics for an asset class — these numbers directly feed the pairwise comparison matrices. <strong>Refresh Live Data</strong> to pull the latest figures from market APIs.
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title"><span class="dot"></span>Financial Evidence Panel</div>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <select class="form-control" id="evScenario" style="width:180px" onchange="loadEvidence()">
+            <option>Steady Growth</option><option>Bull Market</option>
+            <option>Stagflation</option><option>Deflation</option>
+          </select>
+          <button class="btn" id="btnRefreshLive" onclick="refreshLiveData()" style="padding:6px 14px;font-size:.8rem">↻ Refresh Live Data</button>
+        </div>
+      </div>
+
+      <div id="liveDataBanner" style="margin-bottom:12px;padding:8px 14px;border-radius:8px;font-size:.82rem;display:none;align-items:center;gap:10px;flex-wrap:wrap">
+        <span id="liveDataBadge" style="font-weight:700;padding:2px 9px;border-radius:12px;font-size:.75rem;letter-spacing:.5px"></span>
+        <span id="liveDataSource" style="opacity:.85"></span>
+        <span id="liveDataWindow" style="opacity:.7"></span>
+        <span id="liveDataTime" style="opacity:.6;margin-left:auto;font-size:.75rem"></span>
+      </div>
+
+      <div class="card">
+        <div class="table-wrap"><table id="evTable">
+          <thead><tr>
+            <th>Asset Class</th><th>Proxy ETF</th><th>E[R] %</th><th>Beta</th><th>Vol %</th>
+            <th>Max DD %</th><th>Liquidity</th><th>Avg Corr</th><th>Sharpe</th>
+          </tr></thead>
+          <tbody id="evBody"></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <div class="card section">
+      <div class="card-title">Asset Class Correlation Matrix</div>
+      <div style="font-size:.78rem;color:var(--muted);margin-bottom:12px">
+        Pairwise return correlations. <span style="color:var(--green)">Green</span> = low correlation (diversification benefit). <span style="color:var(--red)">Red</span> = high correlation (concentrated risk).
+      </div>
+      <div class="chart-wrap" style="height:360px"><canvas id="corrChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- ══ BENCHMARK ════════════════════════════════════════ -->
+  <div class="ptab-panel" id="ptab-benchmark">
+    <div class="tab-intro">
+      <h3>Fund Benchmark — Model vs Reality</h3>
+      How accurately does the AHP model predict real pension fund allocations? Validated against <strong>8 global pension funds</strong> (CalPERS, APG, CPPIB, Ontario Teachers, and more) across 2021–2025. A mean absolute error below 5% is considered excellent.
+    </div>
+
+    <div class="section-header" style="margin-bottom:20px">
+      <div class="section-title"><span class="dot"></span>Model Accuracy vs 8 Major Pension Funds</div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <select class="form-control" id="bmFund" style="width:200px" onchange="updateBenchmarkFund()">
+          <option value="">— All Funds Overview —</option>
+          <option>CalPERS</option><option>Ontario Teachers</option>
+          <option>CPPIB</option><option>NYSCRF</option><option>APG</option>
+          <option>CalSTRS</option><option>TRS Texas</option><option>FSBA</option>
+        </select>
+        <button class="run-btn" id="bmRunBtn" onclick="runBenchmark()">Load Benchmarks</button>
+      </div>
+    </div>
+
+    <div id="bmEmpty" class="empty">
+      <div class="icon">🏦</div>
+      <div>Click <strong>Load Benchmarks</strong> to compare the AHP model against 8 major pension funds (2021–2025).</div>
+      <div style="margin-top:12px;font-size:.8rem;color:var(--muted)">CalPERS · Ontario Teachers · CPPIB · NYSCRF · APG · CalSTRS · TRS Texas · FSBA</div>
+    </div>
+
+    <div id="bmContent" style="display:none">
+      <div class="grid-4 section" id="bmKPIs"></div>
+
+      <div class="section">
+        <div class="section-title" style="margin-bottom:14px"><span class="dot"></span>Fund Profiles</div>
+        <div id="fundProfileGrid" class="fund-profile-grid"></div>
+      </div>
+
+      <div class="section">
+        <div class="card">
+          <div class="card-title">All Competitors — MAE % by Fund (Lower = Better)</div>
+          <div class="chart-wrap" style="height:280px"><canvas id="bmAllFundsChart"></canvas></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="card">
+          <div class="card-title">Model Error Heatmap — Mean Absolute Error % by Fund × Asset Class</div>
+          <div style="overflow-x:auto"><table class="heatmap-table" id="errorHeatmap"></table></div>
+          <div style="margin-top:10px;display:flex;gap:16px;font-size:.75rem;color:var(--muted)">
+            <span><span style="display:inline-block;width:12px;height:12px;background:rgba(16,185,129,.6);border-radius:2px;margin-right:4px"></span>≤ 2% Excellent</span>
+            <span><span style="display:inline-block;width:12px;height:12px;background:rgba(59,130,246,.6);border-radius:2px;margin-right:4px"></span>2–4% Good</span>
+            <span><span style="display:inline-block;width:12px;height:12px;background:rgba(245,158,11,.6);border-radius:2px;margin-right:4px"></span>4–6% Acceptable</span>
+            <span><span style="display:inline-block;width:12px;height:12px;background:rgba(239,68,68,.6);border-radius:2px;margin-right:4px"></span>&gt;6% Review</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="bmFundDetail" style="display:none">
+        <div class="section-title" style="margin-bottom:16px"><span class="dot"></span><span id="bmFundDetailName">Fund Detail</span></div>
+        <div class="grid-2 section">
+          <div class="card">
+            <div class="card-title">Model vs Actual Allocation — Latest Year</div>
+            <div class="chart-wrap" style="height:300px"><canvas id="bmCompareChart"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Allocation Accuracy Over Time</div>
+            <div class="chart-wrap" style="height:300px"><canvas id="bmTimeChart"></canvas></div>
+          </div>
+        </div>
+        <div class="card section">
+          <div class="card-title">Year-by-Year Accuracy</div>
+          <div class="table-wrap">
+            <table><thead><tr><th>Year</th><th>Scenario</th><th>MAE %</th><th>RMSE %</th><th>Correlation</th><th>Grade</th><th>Largest Gap</th></tr></thead>
+            <tbody id="bmYearTable"></tbody></table>
+          </div>
+        </div>
+        <div class="card section">
+          <div class="card-title">Mean Absolute Error by Asset Class (2021–2025 avg)</div>
+          <div id="bmAssetErrors"></div>
+        </div>
+        <div class="card section">
+          <div class="card-title">Model vs Actual Scatter — All Years, All Assets</div>
+          <div class="chart-wrap" style="height:340px"><canvas id="bmScatterChart"></canvas></div>
+        </div>
+      </div>
+
+      <div class="card section">
+        <div class="card-title">All Funds Summary</div>
+        <div class="table-wrap">
+          <table><thead><tr><th>Fund</th><th>AUM ($B)</th><th>Funded %</th><th>Risk</th><th>Avg MAE</th><th>Avg Corr</th><th>Hit Rate (A/B)</th><th>Grades</th></tr></thead>
+          <tbody id="bmAllFunds"></tbody></table>
+        </div>
+      </div>
+
+      <div style="margin-top:32px;padding-top:24px;border-top:1px solid var(--border)">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px">
+          <div class="section-title"><span class="dot"></span>Statistical Validation — 40 Data Points (8 Funds × 5 Years)</div>
+          <button class="run-btn" onclick="runValidation()">Run Full Validation</button>
+        </div>
+        <div id="valEmpty" class="empty" style="margin:0"><div class="icon">📋</div>Click <strong>Run Full Validation</strong> to compute MAE, RMSE and correlation across all 40 fund-year observations.</div>
+        <div id="valContent" style="display:none">
+          <div class="grid-4 section" id="valKPIs"></div>
+          <div class="grid-2 section">
+            <div class="card">
+              <div class="card-title">Per-Fund Statistical Summary</div>
+              <div class="table-wrap"><table>
+                <thead><tr><th>Fund</th><th>Avg MAE</th><th>Avg Corr</th><th>Hit Rate</th><th>Grades</th></tr></thead>
+                <tbody id="valSummary"></tbody></table>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-title">MAE by Fund</div>
+              <div class="chart-wrap"><canvas id="valChart"></canvas></div>
+            </div>
+          </div>
+          <div class="card section">
+            <div class="card-title">All 40 Validation Points</div>
+            <div class="table-wrap"><table>
+              <thead><tr><th>Fund</th><th>Year</th><th>Scenario</th><th>MAE %</th><th>RMSE %</th><th>Correlation</th><th>Grade</th><th>Largest Gap</th></tr></thead>
+              <tbody id="valRows"></tbody></table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ FORECAST ════════════════════════════════════════ -->
+  <div class="ptab-panel" id="ptab-forecast">
+    <div class="tab-intro">
+      <h3>Portfolio Forecast 2026–2030</h3>
+      Two forecast modes: <strong>Scenario Forecast</strong> gives probability-weighted point estimates across 5 macro scenarios. <strong>Bootstrap CI</strong> runs 400 simulations per year, returning P10–P90 confidence bands and a 3-component variance decomposition.
+    </div>
+
+    <div class="section-header" style="margin-bottom:20px">
+      <div class="section-title"><span class="dot"></span>Portfolio Forecast 2026–2030</div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <select class="form-control" id="foreFund" style="width:200px">
+          <option>CalPERS</option><option>Ontario Teachers</option>
+          <option>CPPIB</option><option>NYSCRF</option><option>APG</option>
+          <option>CalSTRS</option><option>TRS Texas</option><option>FSBA</option>
+        </select>
+        <button class="run-btn" onclick="runForecast()">Scenario Forecast</button>
+        <button class="btn" id="btnCIForecast" onclick="runCIForecast()" style="padding:8px 16px;font-size:.82rem;background:linear-gradient(135deg,#7c3aed,#2563eb)">
+          ◈ Bootstrap CI (N=400)
+        </button>
+      </div>
+    </div>
+
+    <div id="foreEmpty" class="empty"><div class="icon">🔮</div>Select a fund and click a forecast mode above.</div>
+
+    <div id="foreContent" style="display:none">
+      <div class="grid-2 section">
+        <div class="card">
+          <div class="card-title">Expected Return Distribution (Histogram)</div>
+          <div class="chart-wrap" style="height:300px"><canvas id="foreChart"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Expected Portfolio Returns 2026–2030</div>
+          <div class="chart-wrap" style="height:300px"><canvas id="foreRetChart"></canvas></div>
+        </div>
+      </div>
+      <div class="card section">
+        <div class="card-title">Forecast Allocation Table</div>
+        <div class="table-wrap"><table id="foreTable">
+          <thead><tr><th>Asset Class</th><th>2026E</th><th>2027E</th><th>2028E</th><th>2029E</th><th>2030E</th></tr></thead>
+          <tbody id="foreBody"></tbody>
+        </table></div>
+      </div>
+      <div class="card section">
+        <div class="card-title">Historical Returns Attribution</div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Year</th><th>Scenario</th><th>Actual Return</th><th>Model Return</th><th>Diff</th></tr></thead>
+          <tbody id="attrBody"></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <div id="ciContent" style="display:none">
+      <div id="ciMethodBadge" style="margin-bottom:16px;padding:8px 14px;background:rgba(124,58,237,.1);border:1px solid rgba(124,58,237,.3);border-radius:8px;font-size:.78rem;color:var(--muted)"></div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px" id="ciKpiRow"></div>
+      <div class="card section">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+          <div class="card-title" style="margin-bottom:0">Allocation Fan Charts — P10/P25/P50/P75/P90 Bands</div>
+          <select class="form-control" id="ciFanAsset" style="width:200px" onchange="renderFanChart()">
+            <option value="all">All Assets</option>
+          </select>
+        </div>
+        <div id="ciFanContainer" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px"></div>
+      </div>
+      <div class="grid-2 section">
+        <div class="card">
+          <div class="card-title">Portfolio Return Fan Chart (P10–P90)</div>
+          <div class="chart-wrap" style="height:300px"><canvas id="ciPortRetChart"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Uncertainty Attribution — Variance Decomposition</div>
+          <div class="chart-wrap" style="height:300px"><canvas id="ciAttrChart"></canvas></div>
+        </div>
+      </div>
+      <div class="card section">
+        <div class="card-title">Uncertainty Budget Interpretation</div>
+        <div id="ciAttrText" style="font-size:.84rem;line-height:1.8;color:var(--text)"></div>
+      </div>
+      <div class="card section">
+        <div class="card-title">Bootstrap Allocation Bands — Median (P50) with Confidence Intervals</div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Asset Class</th><th>2026 P50 %</th><th>2026 Band</th><th>2028 P50 %</th><th>2028 Band</th><th>2030 P50 %</th><th>2030 Band</th></tr></thead>
+          <tbody id="ciBandBody"></tbody>
+        </table></div>
+      </div>
+      <div class="card section">
+        <div class="card-title">Forecast Information Ratios (vs Govt Bonds benchmark)</div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Asset Class</th><th>2026 IR</th><th>2027 IR</th><th>2028 IR</th><th>2029 IR</th><th>2030 IR</th></tr></thead>
+          <tbody id="ciIrBody"></tbody>
+        </table></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ AI ADVISOR ══════════════════════════════════════ -->
+  <div class="ptab-panel" id="ptab-chatbot">
+    <div class="tab-intro">
+      <h3>AI Investment Advisor</h3>
+      Powered by Claude. Enter your <strong>Anthropic API key</strong> in the top bar, run the model on Dashboard, then ask anything — get dollar-by-dollar allocation advice, challenge your decisions, stress-test scenarios, or run a full consistency audit.
+    </div>
+
+    <div class="grid-2" style="align-items:start">
+
+      <!-- LEFT: Preferences + Stress Test -->
+      <div style="display:flex;flex-direction:column;gap:16px">
+
+        <div class="card">
+          <div class="card-title">⚖️ Criteria Preferences</div>
+          <div style="font-size:.78rem;color:var(--muted);margin-bottom:12px;line-height:1.6">
+            Adjust pairwise preferences between criteria to personalise the model to your fund's mandate.
+          </div>
+          <div class="pref-tabs">
+            <button class="pref-tab active" onclick="switchPrefTab('saaty',this)">Saaty Scale</button>
+            <button class="pref-tab" onclick="switchPrefTab('verbal',this)">Verbal</button>
+            <button class="pref-tab" onclick="switchPrefTab('allocate',this)">Allocate</button>
+          </div>
+          <div class="pref-panel active" id="pref-saaty">
+            <div style="font-size:.75rem;color:var(--muted);margin-bottom:10px">Set pairwise importance (1=Equal, 9=Absolutely preferred)</div>
+            <div class="pref-pair-row">
+              <span class="pref-pair-label">Return vs Risk</span>
+              <span class="pref-ai-val">AI: 2.0</span>
+              <select class="form-control" id="prefSaaty_Return_Risk" style="width:200px;font-size:.78rem" onchange="checkPrefOverride(this,'2')">
+                <option value="0.333">1/3 — Prefer Risk</option>
+                <option value="1" selected>1 — Equal</option>
+                <option value="2">2 — Moderate Return</option>
+                <option value="3">3 — Moderate Return</option>
+                <option value="5">5 — Strong Return</option>
+                <option value="7">7 — Very Strong Return</option>
+                <option value="9">9 — Absolute Return</option>
+              </select>
+              <span class="pref-override-badge" id="badge_Return_Risk">Override</span>
+            </div>
+            <div class="pref-pair-row">
+              <span class="pref-pair-label">Return vs Liquidity</span>
+              <span class="pref-ai-val">AI: 5.0</span>
+              <select class="form-control" id="prefSaaty_Return_Liquidity" style="width:200px;font-size:.78rem" onchange="checkPrefOverride(this,'5')">
+                <option value="0.333">1/3 — Prefer Liquidity</option>
+                <option value="1">1 — Equal</option>
+                <option value="3">3 — Moderate Return</option>
+                <option value="5" selected>5 — Strong Return</option>
+                <option value="7">7 — Very Strong Return</option>
+                <option value="9">9 — Absolute Return</option>
+              </select>
+              <span class="pref-override-badge" id="badge_Return_Liquidity">Override</span>
+            </div>
+            <div class="pref-pair-row">
+              <span class="pref-pair-label">Risk vs Liquidity</span>
+              <span class="pref-ai-val">AI: 3.0</span>
+              <select class="form-control" id="prefSaaty_Risk_Liquidity" style="width:200px;font-size:.78rem" onchange="checkPrefOverride(this,'3')">
+                <option value="0.333">1/3 — Prefer Liquidity</option>
+                <option value="1">1 — Equal</option>
+                <option value="2">2 — Moderate Risk</option>
+                <option value="3" selected>3 — Moderate Risk</option>
+                <option value="5">5 — Strong Risk</option>
+              </select>
+              <span class="pref-override-badge" id="badge_Risk_Liquidity">Override</span>
+            </div>
+          </div>
+          <div class="pref-panel" id="pref-verbal" style="display:none">
+            <div style="font-size:.78rem;color:var(--muted);padding:12px 0">Describe your fund's mandate in plain language. The AI Advisor will interpret it and map to AHP weights.</div>
+            <textarea class="form-control" rows="3" placeholder="e.g. 'We are a conservative fund focused on capital preservation with a 10-year horizon...'" style="width:100%;resize:vertical"></textarea>
+          </div>
+          <div class="pref-panel" id="pref-allocate" style="display:none">
+            <div style="font-size:.78rem;color:var(--muted);padding:12px 0">Directly assign target allocation % to each asset class. The system will back-solve the implied AHP weights.</div>
+            <div id="directAllocInputs"></div>
+          </div>
+        </div>
+
+        <!-- Stress Test -->
+        <div class="card">
+          <div class="card-title">🔬 Practitioner Stress Test</div>
+          <div style="font-size:.78rem;color:var(--muted);margin-bottom:12px;line-height:1.6">
+            Compare your preferences against 5 practitioner archetypes (CIO, Risk Manager, Actuary, Portfolio Manager, Trustee).
+          </div>
+          <div style="margin-bottom:10px">
+            <label style="font-size:.75rem;color:var(--muted)">Load Archetype Profile</label>
+            <select class="form-control" id="profileSelect" style="margin-top:5px" onchange="loadProfile(this.value)">
+              <option value="">— Select —</option>
+            </select>
+          </div>
+          <div id="profileDesc" style="font-size:.78rem;color:var(--muted);margin-bottom:12px;line-height:1.5;display:none"></div>
+          <div id="criteriaInputsGrid" style="display:grid;grid-template-columns:1fr;gap:8px"></div>
+          <div id="stressCRBadge" style="margin-top:10px"></div>
+          <button class="run-btn" onclick="runStressTest()" style="margin-top:12px;width:100%">Run Stress Test</button>
+          <div id="stressResults" style="display:none;margin-top:16px"></div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT: Chat -->
+      <div>
+        <div class="card" style="padding:0;overflow:hidden">
+          <div style="padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+            <span style="font-size:.85rem;font-weight:600">AI Investment Advisor</span>
+            <div style="display:flex;gap:8px;align-items:center">
+              <span id="chatModelBadge" style="font-size:.7rem;background:rgba(37,99,235,.15);color:var(--accent2);padding:2px 8px;border-radius:12px;border:1px solid rgba(37,99,235,.3)">claude-sonnet-4-6</span>
+              <button onclick="resetAdvisor()" style="background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);color:#ef4444;font-size:.75rem;padding:2px 10px;border-radius:6px;cursor:pointer">↺ Reset</button>
+              <button onclick="clearChat()" style="background:none;border:none;color:var(--muted);font-size:.8rem;cursor:pointer">Clear</button>
+            </div>
+          </div>
+          <div style="padding:16px">
+            <div style="margin-bottom:12px">
+              <select class="chat-mode-select" id="chatMode" style="width:100%;margin-bottom:8px">
+                <option value="ADVISOR">ADVISOR — Investment allocation guide</option>
+                <option value="CHALLENGE">CHALLENGE — Devil's advocate (empirical)</option>
+                <option value="COACH">COACH — Socratic guide</option>
+                <option value="AUDIT">AUDIT — Consistency checker</option>
+                <option value="FORECAST">FORECAST — Scenario stress test</option>
+              </select>
+              <div style="font-size:.78rem;color:var(--muted);line-height:1.55" id="modeDesc">
+                Tells you exactly how much to invest in each asset class, challenges your choices, and compares to real pension funds.
+              </div>
+              <div style="margin-top:8px;padding:7px 10px;background:var(--surface2);border-radius:6px;border:1px solid var(--border)">
+                <div style="font-size:.68rem;color:var(--muted);margin-bottom:3px;text-transform:uppercase;letter-spacing:.04em">Model Context</div>
+                <div id="chatContextStatus" style="font-size:.76rem;color:var(--muted)">No model run yet — click ▶ Run Model first</div>
+              </div>
+            </div>
+
+            <div class="chat-action-btns">
+              <button class="chat-action-btn" onclick="sendChallengeBtn()">⚔ Challenge My Decision</button>
+              <button class="chat-action-btn" onclick="sendCompetitorBtn()">🏛 Predict Competitor Moves</button>
+            </div>
+
+            <div class="chat-area" id="chatArea">
+              <div class="msg bot">
+                <div class="msg-avatar-ai">AI</div>
+                <div class="msg-bubble">Hello! I'm your AI Investment Advisor, powered by Claude and the AHP framework.<br><br>
+                  To get started:<br>
+                  • Enter your Anthropic API key (top right)<br>
+                  • Click ▶ Run Model to compute your AHP allocation<br>
+                  • Ask me anything — "How much to invest in each asset class?", "What are my biggest risks?", "Compare me to CalPERS"
+                </div>
+              </div>
+            </div>
+            <div class="chat-input-row">
+              <textarea class="chat-input" id="chatInput" placeholder="Ask about your portfolio…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}"></textarea>
+              <button class="chat-send" onclick="sendChat()">Send</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- /platform-content -->
+
+<!-- Toast (required by app.js) -->
 <div id="toast"></div>
 
+<!-- Load the full app.js -->
+<script src="/static/js/app.js"></script>
+
 <script>
-// ── STATE ──────────────────────────────────────────────
-const pState = { result: null, mc: null, mode: 'ADVISOR' };
-let pCharts  = {};
-const COLORS = ['#6366f1','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4','#f97316'];
-const ASSETS  = ['Small Stocks','Large Stocks','Corp Bonds','Govt Bonds','Real Estate','Money Market','Commodities'];
-
-// ── TABS ──────────────────────────────────────────────
-function switchTab(name) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('page-' + name).classList.add('active');
-  [...document.querySelectorAll('.tab')].find(t => t.getAttribute('onclick')?.includes("'"+name+"'"))?.classList.add('active');
-  if (name === 'advisor') updatePContextBadge();
-}
-
-// ── TOAST ─────────────────────────────────────────────
-function pToast(msg, type='success') {
-  const el = document.getElementById('toast');
-  el.textContent = msg; el.className = 'show ' + type;
-  setTimeout(() => { el.className = ''; }, 3500);
-}
-
-// ── RUN MODEL ─────────────────────────────────────────
-async function pRunModel() {
-  const btn  = document.getElementById('pRunBtn');
-  const text = document.getElementById('pRunText');
-  btn.disabled = true;
-  text.innerHTML = '<span class="spinner"></span> Running…';
-
-  const payload = {
-    fund_name:     document.getElementById('pFundName').value || 'My Pension Fund',
-    aum:           parseFloat(document.getElementById('pAum').value) || 3.2,
-    scenario:      document.getElementById('pScenario').value,
-    funded_ratio:  parseFloat(document.getElementById('pFunded').value) || 87,
-    n_simulations: 1000,
-  };
-
-  try {
-    const r    = await fetch('/api/run', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
-    const data = await r.json();
-    if (data.error) throw new Error(data.error);
-    pState.result = data;
-    pState.mc     = data.mc_summary || null;
-    renderPDashboard(data);
-    document.getElementById('pEmpty').style.display   = 'none';
-    document.getElementById('pResults').style.display = 'block';
-    updatePContextBadge();
-    pToast('Portfolio allocation complete — Grade ' + data.overall_grade);
-  } catch(e) {
-    pToast('Error: ' + e.message, 'error');
-  } finally {
-    btn.disabled = false; text.innerHTML = '▶ Run Model';
-  }
-}
-
-// ── RENDER DASHBOARD ──────────────────────────────────
-function renderPDashboard(data) {
-  const weights = data.constrained_weights || {};
-  const dollars = data.dollar_allocation   || {};
-  const aum     = parseFloat(document.getElementById('pAum').value) || 3.2;
-
-  // KPIs
-  const top   = Object.entries(weights).sort((a,b) => b[1]-a[1])[0];
-  const grade = data.overall_grade;
-  const cr    = data.consistency_results?.Criteria?.CR || 0;
-  const gradeColor = grade === 'A' ? 'var(--green)' : grade === 'B' ? '#3b82f6' : grade === 'C' ? 'var(--amber)' : 'var(--red)';
-  document.getElementById('pKpiRow').innerHTML = [
-    { label:'Model Grade',   value: grade, sub: 'AHP consistency grade', color: gradeColor },
-    { label:'AUM',           value: '$'+aum+'B', sub: 'Assets under management', color:'#6366f1' },
-    { label:'Top Allocation',value: top[0].split(' ')[0], sub: pct(top[1]) + ' of portfolio', color:'var(--green)' },
-    { label:'Criteria CR',   value: cr.toFixed(3), sub: cr <= 0.1 ? '✓ Consistent' : '⚠ Review needed', color: cr <= 0.1 ? 'var(--green)' : 'var(--amber)' },
-  ].map(k => `
-    <div class="kpi">
-      <div class="kpi-label">${k.label}</div>
-      <div class="kpi-value" style="color:${k.color}">${k.value}</div>
-      <div class="kpi-sub">${k.sub}</div>
-    </div>`).join('');
-
-  const labels  = ASSETS.filter(a => weights[a] != null);
-  const vals    = labels.map(a => +(weights[a]*100).toFixed(1));
-  const colorsL = labels.map((_,i) => COLORS[i]);
-
-  // Donut chart
-  if (pCharts.donut) pCharts.donut.destroy();
-  pCharts.donut = new Chart(document.getElementById('pDonut').getContext('2d'), {
-    type: 'doughnut',
-    data: { labels, datasets: [{ data: vals, backgroundColor: colorsL, borderWidth: 2, borderColor: '#1e293b', hoverOffset: 8 }] },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: {
-        legend: { position:'right', labels:{ color:'#94a3b8', font:{size:11}, boxWidth:12, padding:10 } },
-        tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.parsed.toFixed(1)}%` } },
-      },
-      cutout: '65%',
-    },
-  });
-
-  // Bar chart
-  if (pCharts.bar) pCharts.bar.destroy();
-  pCharts.bar = new Chart(document.getElementById('pBar').getContext('2d'), {
-    type: 'bar',
-    data: { labels: labels.map(a => a.split(' ')[0]), datasets: [{ label:'Allocation %', data: vals, backgroundColor: colorsL, borderRadius: 6 }] },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend:{ display:false } },
-      scales: {
-        x: { ticks:{color:'#94a3b8'}, grid:{color:'rgba(51,65,85,.4)'} },
-        y: { ticks:{color:'#94a3b8', callback: v=>v+'%'}, grid:{color:'rgba(51,65,85,.4)'} },
-      },
-    },
-  });
-
-  // Table
-  document.getElementById('pAllocBody').innerHTML = labels.map((a, i) => {
-    const w  = weights[a] || 0;
-    const d  = (dollars[a] || 0).toFixed(3);
-    const pv = (w*100).toFixed(1);
-    const status = w >= 0.25 ? 'pill-blue' : w >= 0.1 ? 'pill-green' : 'pill-amber';
-    const statusLabel = w >= 0.25 ? 'Core' : w >= 0.1 ? 'Significant' : 'Satellite';
-    return `<tr>
-      <td><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${COLORS[i]};margin-right:8px"></span><strong>${a}</strong></td>
-      <td><strong style="color:var(--text)">${pv}%</strong></td>
-      <td style="color:var(--muted)">$${d}B</td>
-      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:${Math.min(pv,50)*2}%"></div></div><span style="font-size:.78rem;color:var(--muted)">${pv}%</span></div></td>
-      <td><span class="pill ${status}">${statusLabel}</span></td>
-    </tr>`;
-  }).join('');
-
-  // Monte Carlo
-  const mc = pState.mc;
-  if (mc) {
-    document.getElementById('pMcGrid').innerHTML = [
-      { val: (mc.mean_return*100)?.toFixed(2)+'%', lbl:'Expected Return', color:'var(--green)' },
-      { val: (mc.std_return*100)?.toFixed(2)+'%',  lbl:'Return Std Dev',  color:'var(--amber)' },
-      { val: (mc.var_95*100)?.toFixed(2)+'%',      lbl:'VaR (95%)',       color:'var(--red)' },
-      { val: (mc.cvar_95*100)?.toFixed(2)+'%',     lbl:'CVaR (95%)',      color:'var(--red)' },
-      { val: mc.sharpe_ratio?.toFixed(3),           lbl:'Sharpe Ratio',   color:'#6366f1' },
-      { val: (mc.prob_positive*100)?.toFixed(1)+'%',lbl:'Prob Positive',  color:'var(--green)' },
-    ].map(s => `
-      <div class="mc-stat">
-        <div class="mc-stat-val" style="color:${s.color}">${s.val ?? '—'}</div>
-        <div class="mc-stat-lbl">${s.lbl}</div>
-      </div>`).join('');
-  }
-
-  // Insights
-  const cw = data.constrained_weights;
-  const topAssets = Object.entries(cw).sort((a,b)=>b[1]-a[1]).slice(0,3);
-  const crOk = (data.consistency_results?.Criteria?.CR||0) <= 0.1;
-  document.getElementById('pInsights').innerHTML = [
-    { text: `<strong>Top allocation:</strong> ${topAssets[0][0]} at ${pct(topAssets[0][1])} — the model assigns the highest weight based on your scenario and risk profile.` },
-    { text: `<strong>Diversification:</strong> Your top 3 assets (${topAssets.map(a=>a[0].split(' ')[0]).join(', ')}) represent ${pct(topAssets.reduce((s,[,v])=>s+v,0))} of the portfolio.` },
-    { text: `<strong>Consistency:</strong> AHP Criteria CR = ${(data.consistency_results?.Criteria?.CR||0).toFixed(3)} — ${crOk ? 'within the acceptable threshold (≤ 0.10), indicating reliable preference judgements.' : 'above 0.10, indicating some inconsistency in preference comparisons — consider reviewing.'}` },
-    { text: `<strong>Risk:</strong> ${mc ? `Monte Carlo VaR(95%) = ${(mc.var_95*100)?.toFixed(2)}%, Sharpe = ${mc.sharpe_ratio?.toFixed(2)}. ${mc.sharpe_ratio > 0.5 ? 'Strong risk-adjusted performance.' : 'Moderate risk-adjusted profile.'}` : 'Run the full model to see Monte Carlo risk statistics.'}` },
-  ].map(i => `<div class="insight">${i.text}</div>`).join('');
-}
-
-function pct(v) { return v != null ? (v*100).toFixed(1)+'%' : '—'; }
-
-// ── AI ADVISOR ────────────────────────────────────────
-let pChatHistory = [];
-let pCurrentMode = 'ADVISOR';
-
-const pModeDescs = {
-  ADVISOR:   'ADVISOR mode',
-  CHALLENGE: 'CHALLENGE mode',
-  COACH:     'COACH mode',
-  FORECAST:  'FORECAST mode',
-};
-
-function setMode(mode) {
-  pCurrentMode = mode;
-  pState.mode  = mode;
-  document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('selected'));
-  document.getElementById('mode-'+mode)?.classList.add('selected');
-  document.getElementById('pModeBadge').textContent = pModeDescs[mode];
-}
-
-function updatePContextBadge() {
-  const el = document.getElementById('pContextBadge');
-  if (!el) return;
-  if (pState.result) {
-    const r = pState.result;
-    const top = Object.entries(r.constrained_weights).sort((a,b)=>b[1]-a[1])[0];
-    el.textContent = `✓ Model loaded · Grade ${r.overall_grade} · Top: ${top[0].split(' ')[0]} (${pct(top[1])})`;
-    el.className = 'context-badge has-model';
-  } else {
-    el.textContent = 'No model run yet — go to Dashboard first';
-    el.className = 'context-badge';
-  }
-}
-
-function pQuick(msg) {
-  document.getElementById('pChatInput').value = msg;
-  pSendChat();
-}
-
-function pAppendMsg(role, text) {
-  const body = document.getElementById('pChatBody');
-  const id   = 'msg-' + Date.now();
-  const div  = document.createElement('div');
-  div.className = 'msg' + (role==='user' ? ' user' : '');
-  div.innerHTML = `
-    <div class="avatar ${role==='user'?'avatar-user':'avatar-ai'}">${role==='user'?'U':'AI'}</div>
-    <div class="bubble ${role==='user'?'bubble-user':'bubble-ai'}" id="${id}">${text.replace(/\n/g,'<br>')}</div>`;
-  body.appendChild(div);
-  body.scrollTop = body.scrollHeight;
-  return id;
-}
-
-async function pSendChat() {
-  const input  = document.getElementById('pChatInput');
-  const apiKey = document.getElementById('pApiKey').value.trim();
-  const msg    = input.value.trim();
-  if (!msg) return;
-  if (!apiKey) { pToast('Enter your Anthropic API key in the top bar first', 'error'); return; }
-
-  pAppendMsg('user', msg);
-  input.value = '';
-  pChatHistory.push({ role:'user', content: msg });
-
-  const typingId = pAppendMsg('bot', '…');
-  document.getElementById('pSendBtn').disabled = true;
-
-  const modelCtx = pState.result ? {
-    fund_name:           document.getElementById('pFundName').value,
-    aum:                 parseFloat(document.getElementById('pAum').value),
-    scenario:            document.getElementById('pScenario').value,
-    funded_ratio:        parseFloat(document.getElementById('pFunded').value),
-    overall_grade:       pState.result.overall_grade,
-    constrained_weights: pState.result.constrained_weights,
-    dollar_allocation:   pState.result.dollar_allocation,
-    criteria_weights:    pState.result.criteria_weights,
-    consistency_results: pState.result.consistency_results,
-    mc_summary:          pState.mc,
-  } : {};
-
-  try {
-    const r = await fetch('/api/chat', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ message: msg, api_key: apiKey, mode: pCurrentMode, history: pChatHistory.slice(0,-1), model_context: modelCtx }),
-    });
-    const data = await r.json();
-    if (data.error) throw new Error(data.error);
-
-    // Typewriter
-    const words   = data.reply.split(' ');
-    const el      = document.getElementById(typingId);
-    let revealed  = '';
-    if (el) {
-      el.textContent = '';
-      for (let i = 0; i < words.length; i++) {
-        revealed += (i>0?' ':'') + words[i];
-        el.innerHTML = revealed.replace(/\n/g,'<br>');
-        document.getElementById('pChatBody').scrollTop = 9999;
-        await new Promise(r => setTimeout(r, 16));
-      }
-    }
-    pChatHistory.push({ role:'assistant', content: data.reply });
-  } catch(e) {
-    const el = document.getElementById(typingId);
-    if (el) el.innerHTML = '⚠ Error: ' + e.message;
-    pToast(e.message, 'error');
-  } finally {
-    document.getElementById('pSendBtn').disabled = false;
-  }
-}
-
-function pClearChat() {
-  document.getElementById('pChatBody').innerHTML = `
-    <div class="msg"><div class="avatar avatar-ai">AI</div>
-    <div class="bubble bubble-ai">Chat cleared. Ask me anything about your portfolio.</div></div>`;
-  pChatHistory = [];
-}
-
-function pResetChat() {
-  setMode('ADVISOR');
-  pClearChat();
-  pToast('Advisor reset');
+// ── Platform tab switcher (separate from app.js showTab) ──
+function pShowTab(name) {
+  document.querySelectorAll('.ptab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.ptab').forEach(t => t.classList.remove('active'));
+  document.getElementById('ptab-' + name)?.classList.add('active');
+  [...document.querySelectorAll('.ptab')].find(t => t.getAttribute('onclick')?.includes("'"+name+"'"))?.classList.add('active');
+  if (name === 'hierarchy') { renderHierarchy(); renderSubCritCards('return'); }
+  if (name === 'evidence')  loadEvidence();
+  if (name === 'chatbot')   updateChatContextStatus();
 }
 </script>
+</div>
 </body>
 </html>
