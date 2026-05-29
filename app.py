@@ -32,6 +32,11 @@ def index():
     return render_template('index.html')
 
 
+@app.route('/platform')
+def platform():
+    return render_template('platform.html')
+
+
 @app.route('/api/run', methods=['POST'])
 def run_ahp():
     """Run full AHP model and return results."""
