@@ -6,7 +6,7 @@ Flask Web Application Backend
 import sys, os, json
 sys.path.insert(0, os.path.dirname(__file__))
 
-from flask import Flask, render_template, jsonify, request
+from flask import Flask, render_template, jsonify, request, redirect
 from ahp_engine import (
     build_liberty_bell_model, AHPModel,
     ASSET_CLASSES, CRITERIA, ACTORS, HORIZONS, SCENARIOS,
@@ -29,12 +29,12 @@ app.config['TEMPLATES_AUTO_RELOAD'] = True
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('platform.html')
 
 
 @app.route('/platform')
 def platform():
-    return render_template('platform.html')
+    return redirect('/')
 
 
 @app.route('/api/run', methods=['POST'])
