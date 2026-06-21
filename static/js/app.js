@@ -99,8 +99,10 @@ async function runModel() {
     renderMonteCarlo(data);
     renderMatrices(data);
 
-    document.getElementById('heroGrade').textContent = data.result.overall_grade;
-    document.getElementById('heroAum').textContent   = '$' + payload.aum + 'B';
+    const heroGrade = document.getElementById('heroGrade');
+    const heroAum   = document.getElementById('heroAum');
+    if (heroGrade) heroGrade.textContent = data.result.overall_grade;
+    if (heroAum)   heroAum.textContent   = '$' + payload.aum + 'B';
     updateChatContextStatus();
 
     toast('Model run complete — Grade ' + data.result.overall_grade);
