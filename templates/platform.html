@@ -191,75 +191,146 @@
 
     <!-- Empty state -->
     <div id="dashEmpty" class="empty">
-      <div class="icon">📈</div>
+      <div class="icon">⚡</div>
       <div style="font-size:1.05rem;font-weight:600;color:var(--text);margin-bottom:8px">Ready to Generate Your Allocation</div>
       <div style="font-size:.85rem;color:var(--muted);max-width:440px;margin:0 auto;line-height:1.7">Configure your fund above and click <strong>▶ Run Model</strong> to get a research-validated portfolio allocation with Monte Carlo risk analysis.</div>
       <button class="run-btn" onclick="runModel()" style="margin-top:20px">▶ Run Model Now</button>
     </div>
 
-    <!-- Results -->
+    <!-- Results — uses exact same IDs as app.js -->
     <div id="dashResults" style="display:none">
 
       <!-- KPI strip -->
-      <div class="grid-4 section" id="dashKPIs" style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px"></div>
+      <div class="grid-4 section" id="kpiRow"></div>
 
-      <!-- Charts row -->
+      <!-- Allocation + Donut -->
       <div class="grid-2 section">
         <div class="card">
-          <div class="card-title">Asset Allocation — Constrained Weights</div>
-          <div class="chart-wrap" style="height:300px"><canvas id="allocChart"></canvas></div>
+          <div class="card-title">Portfolio Allocation</div>
+          <div id="allocBars"></div>
         </div>
         <div class="card">
-          <div class="card-title">Dollar Allocation ($B)</div>
-          <div class="chart-wrap" style="height:300px"><canvas id="dollarChart"></canvas></div>
+          <div class="card-title">Weight Distribution</div>
+          <div class="chart-wrap"><canvas id="donutChart"></canvas></div>
         </div>
       </div>
 
-      <!-- Allocation tables -->
+      <!-- Consistency + Criteria Weights -->
       <div class="grid-2 section">
         <div class="card">
-          <div class="card-title">Portfolio Weights</div>
-          <div class="table-wrap">
-            <table><thead><tr><th>Asset Class</th><th>Weight %</th><th>Bar</th></tr></thead>
-            <tbody id="allocBody"></tbody></table>
-          </div>
+          <div class="card-title">Consistency Audit — All Matrices</div>
+          <div id="crList"></div>
+          <div style="margin-top:14px" id="dualSynthResult"></div>
         </div>
         <div class="card">
-          <div class="card-title">Dollar Allocation</div>
-          <div class="table-wrap">
-            <table><thead><tr><th>Asset Class</th><th>Amount ($B)</th><th>Bar</th></tr></thead>
-            <tbody id="allocDollarBody"></tbody></table>
-          </div>
+          <div class="card-title">Criteria Weights</div>
+          <div class="chart-wrap"><canvas id="criteriaChart"></canvas></div>
         </div>
       </div>
 
       <!-- Monte Carlo -->
       <div id="mcEmpty" class="empty" style="display:none"><div class="icon">🎲</div>Monte Carlo running…</div>
-      <div id="mcResults" style="display:none">
-        <div class="section-title" style="margin-bottom:14px"><span class="dot"></span>Monte Carlo Risk Analysis — 1,000 Simulations</div>
-        <div id="mcGrid" class="grid-4 section" style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px"></div>
-        <div id="mcCharts" class="grid-2 section"></div>
+      <div id="mcContent" style="display:none">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:14px;padding-top:24px;border-top:1px solid var(--border)">
+          <div>
+            <div class="card-title" style="margin-bottom:4px">Monte Carlo Robustness — 1,000 Simulations</div>
+            <div style="font-size:.78rem;color:var(--muted)">±20% perturbation of all pairwise judgments. P5–P95 bands show allocation stability.</div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center">
+            <select class="form-control" id="sensSelect" style="width:160px">
+              <option>Return</option><option>Risk</option><option>Liquidity</option><option>Diversification</option>
+            </select>
+            <button class="btn" onclick="runSensitivity()" style="padding:6px 14px;font-size:.78rem">Sensitivity Sweep</button>
+          </div>
+        </div>
+        <div class="grid-2 section" style="margin-top:0">
+          <div class="card">
+            <div class="card-title">Confidence Intervals (P5–P95)</div>
+            <div class="chart-wrap" style="height:280px"><canvas id="mcChart"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Sensitivity Ratings</div>
+            <div class="table-wrap"><table>
+              <thead><tr><th>Asset</th><th>Mean %</th><th>Std %</th><th>P5 %</th><th>P95 %</th><th>Sensitivity</th></tr></thead>
+              <tbody id="mcTable"></tbody>
+            </table></div>
+            <div class="chart-wrap" style="height:200px;margin-top:14px"><canvas id="sensChart"></canvas></div>
+          </div>
+        </div>
       </div>
 
-      <!-- Advanced Analysis (collapsible) -->
-      <div class="card section">
-        <div class="section-collapse-header" onclick="toggleSection('advancedAnalysis',this)" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between">
-          <div class="card-title" style="margin:0">▶ Advanced Analysis — AHP Matrices & Consistency</div>
-          <span style="color:var(--muted);font-size:.8rem">Click to expand</span>
+      <!-- Advanced: Matrices + Stress Test (collapsible) -->
+      <div style="padding-top:24px;border-top:1px solid var(--border);margin-top:8px">
+        <div class="section-collapse-header" onclick="toggleSection('ahpAnalysis',this)">
+          <span>▶ Advanced: AHP Matrix Inspector &amp; Stress Test</span>
+          <span style="font-size:.72rem;color:var(--muted)">Inspect pairwise matrices · stress-test practitioner profiles</span>
         </div>
-        <div id="advancedAnalysis" style="display:none;margin-top:16px">
-          <div class="grid-2 section">
-            <div>
-              <div style="font-size:.78rem;color:var(--muted);margin-bottom:8px;font-weight:600">Select Matrix</div>
-              <select class="form-control" id="matrixSelect" onchange="renderMatrix(this.value)" style="margin-bottom:14px">
-                <option value="Criteria">Criteria (4×4)</option>
-                <option value="Actors">Actors (3×3)</option>
-                <option value="Horizon">Horizon (3×3)</option>
-                <option value="Scenarios">Scenarios (4×4)</option>
-              </select>
-              <div id="matrixTable" class="table-wrap"></div>
+        <div id="ahpAnalysis" style="display:none">
+          <div id="matricesContent" style="display:none;margin-top:16px">
+            <div class="card section">
+              <div class="card-title">Select Matrix</div>
+              <select class="form-control" id="matrixSelector" style="max-width:280px" onchange="renderMatrix()"></select>
             </div>
-            <div id="crResults"></div>
+            <div class="grid-2">
+              <div class="card">
+                <div class="card-title">Pairwise Comparison Matrix</div>
+                <div class="table-wrap"><table id="matrixTable"></table></div>
+              </div>
+              <div class="card">
+                <div class="card-title">Priority Weights &amp; Consistency</div>
+                <div id="matrixStats"></div>
+              </div>
+            </div>
+          </div>
+          <div id="matricesEmpty" class="empty" style="margin:16px 0"><div class="icon">🔢</div>Run the model first to inspect matrices.</div>
+
+          <div class="card section" style="margin-top:20px">
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px">
+              <div>
+                <div class="card-title" style="margin-bottom:4px">Practitioner Stress Test</div>
+                <div style="font-size:.8rem;color:var(--muted)">Adjust criteria importance and re-run — stress-test real practitioner profiles.</div>
+              </div>
+              <select class="form-control" id="practitionerProfile" style="width:220px" onchange="loadPractitionerProfile()">
+                <option value="">— Load a profile —</option>
+              </select>
+            </div>
+            <div id="profileDesc" style="display:none;margin-bottom:14px;padding:10px 14px;background:rgba(37,99,235,.08);border:1px solid rgba(37,99,235,.2);border-radius:8px;font-size:.82rem;line-height:1.6;color:var(--text)"></div>
+            <div id="criteriaInputsGrid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;margin-bottom:16px"></div>
+            <div id="stressCrBar" style="display:none;margin-bottom:14px;padding:8px 14px;border-radius:8px;font-size:.82rem"></div>
+            <button class="run-btn" id="btnStressTest" onclick="runStressTest()">▶ Run Stress Test</button>
+          </div>
+
+          <div id="stressResults" style="display:none;margin-top:24px">
+            <div class="grid-2 section">
+              <div class="card">
+                <div class="card-title">Allocation Comparison — Base vs Practitioner</div>
+                <div class="chart-wrap" style="height:300px"><canvas id="stressCompareChart"></canvas></div>
+              </div>
+              <div class="card">
+                <div class="card-title">Delta Allocation (Practitioner − Base)</div>
+                <div class="chart-wrap" style="height:300px"><canvas id="stressDeltaChart"></canvas></div>
+              </div>
+            </div>
+            <div class="grid-2 section">
+              <div class="card">
+                <div class="card-title">Criteria Weight Shift</div>
+                <div class="chart-wrap" style="height:220px"><canvas id="stressCritChart"></canvas></div>
+              </div>
+              <div class="card">
+                <div class="card-title">Per-Pair Sensitivity</div>
+                <div class="table-wrap"><table>
+                  <thead><tr><th>Comparison</th><th>Current</th><th>↑ 1 step</th><th>↓ 1 step</th><th>Max shift</th></tr></thead>
+                  <tbody id="stressSensBody"></tbody>
+                </table></div>
+              </div>
+            </div>
+            <div class="card section">
+              <div class="card-title">Full Allocation Table</div>
+              <div class="table-wrap"><table>
+                <thead><tr><th>Asset Class</th><th>Base %</th><th>Practitioner %</th><th>Δ pp</th><th>Direction</th></tr></thead>
+                <tbody id="stressAllocBody"></tbody>
+              </table></div>
+            </div>
           </div>
         </div>
       </div>
@@ -671,23 +742,22 @@
           </div>
         </div>
 
-        <!-- Stress Test -->
+        <!-- Quick Insights -->
         <div class="card">
-          <div class="card-title">🔬 Practitioner Stress Test</div>
-          <div style="font-size:.78rem;color:var(--muted);margin-bottom:12px;line-height:1.6">
-            Compare your preferences against 5 practitioner archetypes (CIO, Risk Manager, Actuary, Portfolio Manager, Trustee).
+          <div class="card-title">💡 Quick AI Prompts</div>
+          <div style="font-size:.78rem;color:var(--muted);margin-bottom:14px;line-height:1.6">
+            Click a prompt to instantly ask the AI Advisor.
           </div>
-          <div style="margin-bottom:10px">
-            <label style="font-size:.75rem;color:var(--muted)">Load Archetype Profile</label>
-            <select class="form-control" id="profileSelect" style="margin-top:5px" onchange="loadProfile(this.value)">
-              <option value="">— Select —</option>
-            </select>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <button class="chat-action-btn" style="text-align:left;white-space:normal;height:auto;padding:10px 14px;line-height:1.5" onclick="document.getElementById('chatInput').value='How much should I invest in each asset class given my fund configuration?';sendChat()">📊 How much to invest in each asset class?</button>
+            <button class="chat-action-btn" style="text-align:left;white-space:normal;height:auto;padding:10px 14px;line-height:1.5" onclick="document.getElementById('chatInput').value='What are my biggest portfolio risks and how should I mitigate them?';sendChat()">🛡️ What are my biggest risks?</button>
+            <button class="chat-action-btn" style="text-align:left;white-space:normal;height:auto;padding:10px 14px;line-height:1.5" onclick="document.getElementById('chatInput').value='Compare my allocation to CalPERS and identify key differences.';sendChat()">🏛️ Compare to CalPERS</button>
+            <button class="chat-action-btn" style="text-align:left;white-space:normal;height:auto;padding:10px 14px;line-height:1.5" onclick="document.getElementById('chatInput').value='Run a consistency audit on my AHP matrix and flag any inconsistencies.';sendChat()">🔍 Consistency audit</button>
+            <button class="chat-action-btn" style="text-align:left;white-space:normal;height:auto;padding:10px 14px;line-height:1.5" onclick="document.getElementById('chatInput').value='What happens to my allocation if we enter a stagflation environment?';sendChat()">📉 Stagflation stress test</button>
           </div>
-          <div id="profileDesc" style="font-size:.78rem;color:var(--muted);margin-bottom:12px;line-height:1.5;display:none"></div>
-          <div id="criteriaInputsGrid" style="display:grid;grid-template-columns:1fr;gap:8px"></div>
-          <div id="stressCRBadge" style="margin-top:10px"></div>
-          <button class="run-btn" onclick="runStressTest()" style="margin-top:12px;width:100%">Run Stress Test</button>
-          <div id="stressResults" style="display:none;margin-top:16px"></div>
+          <div style="margin-top:16px;padding:10px 14px;background:rgba(99,102,241,.06);border:1px solid rgba(99,102,241,.15);border-radius:8px;font-size:.76rem;color:var(--muted);line-height:1.6">
+            For practitioner profiles and stress tests, see the <strong style="color:var(--accent)">Dashboard → Advanced Analysis</strong> section.
+          </div>
         </div>
 
       </div>
