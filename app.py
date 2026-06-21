@@ -29,12 +29,12 @@ app.config['TEMPLATES_AUTO_RELOAD'] = True
 
 @app.route('/')
 def index():
-    return render_template('platform.html')
+    return render_template('index.html')
 
 
 @app.route('/platform')
 def platform():
-    return redirect('/')
+    return render_template('platform.html')
 
 
 @app.route('/api/run', methods=['POST'])
