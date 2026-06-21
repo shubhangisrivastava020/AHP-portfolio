@@ -87,30 +87,33 @@
   /* Content area */
   .platform-content { max-width: 1360px; margin: 0 auto; padding: 28px 24px; }
 
-  /* Page sections */
-  .ptab-panel { display: none; }
-  .ptab-panel.active { display: block; }
+  /* Ensure dark background + light text as base */
+  body { background: #050810 !important; color: #e6edf3 !important; }
 
-  /* Section intro box — friendly explanation at top of each tab */
+  /* Page sections — !important so nothing from style.css can override */
+  .ptab-panel { display: none !important; }
+  .ptab-panel.active { display: block !important; }
+
+  /* Section intro box */
   .tab-intro {
-    background: linear-gradient(135deg, rgba(99,102,241,.07), rgba(37,99,235,.04));
-    border: 1px solid rgba(99,102,241,.18);
+    background: rgba(99,102,241,.12);
+    border: 1px solid rgba(99,102,241,.30);
     border-radius: 12px;
     padding: 16px 22px;
     margin-bottom: 24px;
     font-size: .84rem;
-    color: #94a3b8;
+    color: #c4cde0;
     line-height: 1.7;
   }
-  .tab-intro strong { color: #e2e8f0; }
+  .tab-intro strong { color: #f1f5f9; }
   .tab-intro h3 { font-size: .95rem; color: #f1f5f9; margin-bottom: 6px; font-weight: 700; }
 
   /* Hide the original nav — we use platform-bar instead */
   nav { display: none !important; }
   .hero { display: none !important; }
-  #app { padding-top: 0 !important; }
+  #app { padding-top: 0 !important; display: block !important; }
 
-  /* Tab panels use our class, not the original */
+  /* Tab panels from index.html must stay hidden */
   .tab-panel { display: none !important; }
 </style>
 </head>
