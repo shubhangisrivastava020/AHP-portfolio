@@ -87,12 +87,8 @@
   /* Content area */
   .platform-content { max-width: 1360px; margin: 0 auto; padding: 28px 24px; }
 
-  /* Ensure dark background + light text as base */
-  body { background: #050810 !important; color: #e6edf3 !important; }
-
-  /* Page sections — !important so nothing from style.css can override */
-  .ptab-panel { display: none !important; }
-  .ptab-panel.active { display: block !important; }
+  /* Safety-net base colours */
+  body { background: #050810; color: #e6edf3; }
 
   /* Section intro box */
   .tab-intro {
@@ -111,10 +107,12 @@
   /* Hide the original nav — we use platform-bar instead */
   nav { display: none !important; }
   .hero { display: none !important; }
-  #app { padding-top: 0 !important; display: block !important; }
+  #app { padding-top: 0 !important; }
 
   /* Tab panels from index.html must stay hidden */
   .tab-panel { display: none !important; }
+
+  /* ptab-panels are shown/hidden ONLY via JS inline styles — no CSS rule needed */
 </style>
 </head>
 <body>
@@ -154,7 +152,7 @@
 <div class="platform-content">
 
   <!-- ══ DASHBOARD ══════════════════════════════════════ -->
-  <div class="ptab-panel active" id="ptab-dashboard">
+  <div class="ptab-panel" id="ptab-dashboard" style="display:block">
     <div class="tab-intro">
       <h3>Portfolio Dashboard</h3>
       Configure your fund details below, then click <strong>▶ Run Model</strong> (top right) to generate an AI-powered AHP allocation across 7 asset classes with Monte Carlo risk analysis.
@@ -342,7 +340,7 @@
   </div>
 
   <!-- ══ HIERARCHY ══════════════════════════════════════ -->
-  <div class="ptab-panel" id="ptab-hierarchy">
+  <div class="ptab-panel" id="ptab-hierarchy" style="display:none">
     <div class="tab-intro">
       <h3>AHP Decision Hierarchy</h3>
       The Analytic Hierarchy Process structures portfolio decisions as a <strong>6-level tree</strong>: Goal → Actors → Horizon → Scenarios → Criteria → Asset Classes. Click any node to explore its role, data, and how it shapes the final allocation.
@@ -409,7 +407,7 @@
   </div>
 
   <!-- ══ EVIDENCE ════════════════════════════════════════ -->
-  <div class="ptab-panel" id="ptab-evidence">
+  <div class="ptab-panel" id="ptab-evidence" style="display:none">
     <div class="tab-intro">
       <h3>Live Financial Evidence</h3>
       Real-time market data powering the AHP model. Each row shows key metrics for an asset class — these numbers directly feed the pairwise comparison matrices. <strong>Refresh Live Data</strong> to pull the latest figures from market APIs.
@@ -455,7 +453,7 @@
   </div>
 
   <!-- ══ BENCHMARK ════════════════════════════════════════ -->
-  <div class="ptab-panel" id="ptab-benchmark">
+  <div class="ptab-panel" id="ptab-benchmark" style="display:none">
     <div class="tab-intro">
       <h3>Fund Benchmark — Model vs Reality</h3>
       How accurately does the AHP model predict real pension fund allocations? Validated against <strong>8 global pension funds</strong> (CalPERS, APG, CPPIB, Ontario Teachers, and more) across 2021–2025. A mean absolute error below 5% is considered excellent.
@@ -578,7 +576,7 @@
   </div>
 
   <!-- ══ FORECAST ════════════════════════════════════════ -->
-  <div class="ptab-panel" id="ptab-forecast">
+  <div class="ptab-panel" id="ptab-forecast" style="display:none">
     <div class="tab-intro">
       <h3>Portfolio Forecast 2026–2030</h3>
       Two forecast modes: <strong>Scenario Forecast</strong> gives probability-weighted point estimates across 5 macro scenarios. <strong>Bootstrap CI</strong> runs 400 simulations per year, returning P10–P90 confidence bands and a 3-component variance decomposition.
@@ -672,7 +670,7 @@
   </div>
 
   <!-- ══ AI ADVISOR ══════════════════════════════════════ -->
-  <div class="ptab-panel" id="ptab-chatbot">
+  <div class="ptab-panel" id="ptab-chatbot" style="display:none">
     <div class="tab-intro">
       <h3>AI Investment Advisor</h3>
       Powered by Claude. Enter your <strong>Anthropic API key</strong> in the top bar, run the model on Dashboard, then ask anything — get dollar-by-dollar allocation advice, challenge your decisions, stress-test scenarios, or run a full consistency audit.
@@ -826,21 +824,35 @@
 <!-- Toast (required by app.js) -->
 <div id="toast"></div>
 
-<!-- Load the full app.js -->
-<script src="/static/js/app.js"></script>
-
+<!-- Tab switcher defined BEFORE app.js so it works even if app.js errors -->
 <script>
-// ── Platform tab switcher (separate from app.js showTab) ──
 function pShowTab(name) {
-  document.querySelectorAll('.ptab-panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.ptab').forEach(t => t.classList.remove('active'));
-  document.getElementById('ptab-' + name)?.classList.add('active');
-  [...document.querySelectorAll('.ptab')].find(t => t.getAttribute('onclick')?.includes("'"+name+"'"))?.classList.add('active');
-  if (name === 'hierarchy') { renderHierarchy(); renderSubCritCards('return'); }
-  if (name === 'evidence')  loadEvidence();
-  if (name === 'chatbot')   updateChatContextStatus();
+  // Hide every panel using inline style with !important — beats any CSS rule
+  document.querySelectorAll('.ptab-panel').forEach(function(p) {
+    p.style.setProperty('display', 'none', 'important');
+  });
+  // Deactivate all tab buttons
+  document.querySelectorAll('.ptab').forEach(function(t) {
+    t.classList.remove('active');
+  });
+  // Show the target panel
+  var panel = document.getElementById('ptab-' + name);
+  if (panel) panel.style.setProperty('display', 'block', 'important');
+  // Highlight the clicked tab button
+  document.querySelectorAll('.ptab').forEach(function(t) {
+    if ((t.getAttribute('onclick') || '').indexOf("'" + name + "'") !== -1) {
+      t.classList.add('active');
+    }
+  });
+  // Tab-specific init
+  if (name === 'hierarchy') { try { renderHierarchy(); renderSubCritCards('return'); } catch(e){} }
+  if (name === 'evidence')  { try { loadEvidence(); } catch(e){} }
+  if (name === 'chatbot')   { try { updateChatContextStatus(); } catch(e){} }
 }
 </script>
+
+<!-- Load the full app.js -->
+<script src="/static/js/app.js"></script>
 </div>
 </body>
 </html>
