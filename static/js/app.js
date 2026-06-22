@@ -1537,20 +1537,45 @@ async function sendChat() {
     });
     const data = await r.json();
     if (data.error) throw new Error(data.error);
-    // Typewriter effect — reveal one word at a time
-    const words = data.reply.split(' ');
-    let revealed = '';
-    const el = document.getElementById(typingId);
-    if (el) {
-      el.textContent = '';
+    const reply  = data.reply;
+    const parsed = parseBotResponse(reply);
+    const msgEl  = document.getElementById(typingId);
+    if (msgEl && parsed) {
+      // Build card skeleton — insight empty, question hidden
+      msgEl.innerHTML = `
+        <div class="msg-avatar-ai">AI</div>
+        <div class="msg-card">
+          <div class="msg-insight" id="${typingId}-insight"></div>
+          <div class="msg-question" id="${typingId}-q" style="opacity:0;transition:opacity .4s">
+            <span class="msg-q-icon">?</span>
+            <span class="msg-q-text">${escHtml(parsed.question)}</span>
+          </div>
+        </div>`;
+      // Typewriter the insight
+      const insightEl = document.getElementById(typingId + '-insight');
+      const words = parsed.insight.split(' ');
+      let revealed = '';
       for (let i = 0; i < words.length; i++) {
         revealed += (i > 0 ? ' ' : '') + words[i];
-        el.innerHTML = revealed.replace(/\n/g,'<br>');
-        el.parentElement?.parentElement?.scrollIntoView({ behavior:'smooth', block:'end' });
+        insightEl.textContent = revealed;
+        document.getElementById('chatArea').scrollTop = 9999;
+        await new Promise(r => setTimeout(r, 22));
+      }
+      // Fade in the question card
+      await new Promise(r => setTimeout(r, 180));
+      const qEl = document.getElementById(typingId + '-q');
+      if (qEl) qEl.style.opacity = '1';
+    } else if (msgEl) {
+      // Fallback: plain typewriter
+      const words = reply.split(' ');
+      let revealed = '';
+      const bubble = msgEl.querySelector('.msg-bubble') || msgEl;
+      for (let i = 0; i < words.length; i++) {
+        revealed += (i > 0 ? ' ' : '') + words[i];
+        bubble.innerHTML = revealed.replace(/\n/g,'<br>');
+        document.getElementById('chatArea').scrollTop = 9999;
         await new Promise(r => setTimeout(r, 18));
       }
-    } else {
-      updateMsg(typingId, data.reply);
     }
     state.chatHistory.push({ role: 'assistant', content: data.reply });
   } catch(e) {
@@ -1563,7 +1588,13 @@ function clearChat() {
   document.getElementById('chatArea').innerHTML = `
     <div class="msg bot">
       <div class="msg-avatar-ai">AI</div>
-      <div class="msg-bubble">Chat cleared. Ask me anything about your AHP portfolio decisions.</div>
+      <div class="msg-card">
+        <div class="msg-insight">Ready for your questions. Run the model first (▶ Run Model), then ask me anything.</div>
+        <div class="msg-question">
+          <span class="msg-q-icon">?</span>
+          <span class="msg-q-text">What's the single biggest risk in your current allocation?</span>
+        </div>
+      </div>
     </div>`;
   state.chatHistory = [];
 }
@@ -1581,6 +1612,38 @@ function resetAdvisor() {
 }
 
 let msgCounter = 0;
+
+function parseBotResponse(text) {
+  // Parse INSIGHT: ... QUESTION: ... format
+  const iMatch = text.match(/INSIGHT:\s*([\s\S]+?)(?=\nQUESTION:|$)/i);
+  const qMatch = text.match(/QUESTION:\s*([\s\S]+?)$/i);
+  if (iMatch && qMatch) {
+    return { insight: iMatch[1].trim(), question: qMatch[1].trim() };
+  }
+  return null;
+}
+
+function buildBotHTML(text, isTyping) {
+  if (isTyping) {
+    return `<div class="msg-avatar-ai">AI</div><div class="msg-bubble msg-typing">…</div>`;
+  }
+  const parsed = parseBotResponse(text);
+  if (parsed) {
+    return `
+      <div class="msg-avatar-ai">AI</div>
+      <div class="msg-card">
+        <div class="msg-insight">${escHtml(parsed.insight)}</div>
+        <div class="msg-question">
+          <span class="msg-q-icon">?</span>
+          <span class="msg-q-text">${escHtml(parsed.question)}</span>
+        </div>
+      </div>`;
+  }
+  // Fallback: plain text
+  let html = escHtml(text).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+  return `<div class="msg-avatar-ai">AI</div><div class="msg-bubble">${html}</div>`;
+}
+
 function appendMsg(role, text) {
   const id   = 'msg-' + (++msgCounter);
   const area = document.getElementById('chatArea');
@@ -1588,49 +1651,22 @@ function appendMsg(role, text) {
   div.className = 'msg ' + role;
   div.id = id;
   if (role === 'user') {
-    div.innerHTML = `
-      <div class="msg-avatar">U</div>
-      <div class="msg-bubble">${escHtml(text)}</div>`;
+    div.innerHTML = `<div class="msg-avatar">U</div><div class="msg-bubble">${escHtml(text)}</div>`;
   } else {
-    div.innerHTML = `
-      <div class="msg-avatar-ai">AI</div>
-      <div class="msg-bubble">${escHtml(text)}</div>`;
+    div.innerHTML = buildBotHTML(text, text === '…');
   }
   area.appendChild(div);
   area.scrollTop = area.scrollHeight;
   return id;
 }
 
-function renderBotMarkdown(text) {
-  // Convert **bold** → <strong>
-  let html = escHtml(text);
-  html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-  // Convert lines starting with "- " or "• " to list items
-  const lines = html.split('\n');
-  let inList = false;
-  const result = [];
-  for (const line of lines) {
-    if (/^[-•]\s/.test(line)) {
-      if (!inList) { result.push('<ul style="margin:6px 0 6px 16px;padding:0">'); inList = true; }
-      result.push('<li style="margin-bottom:3px">' + line.replace(/^[-•]\s/, '') + '</li>');
-    } else {
-      if (inList) { result.push('</ul>'); inList = false; }
-      result.push(line);
-    }
-  }
-  if (inList) result.push('</ul>');
-  return result.join('\n');
-}
-
 function updateMsg(id, text) {
   const el = document.getElementById(id);
-  if (el) {
-    const bubble = el.querySelector('.msg-bubble');
-    if (el.classList.contains('bot')) {
-      bubble.innerHTML = renderBotMarkdown(text);
-    } else {
-      bubble.textContent = text;
-    }
+  if (!el) return;
+  if (el.classList.contains('bot')) {
+    el.innerHTML = buildBotHTML(text, false);
+  } else {
+    el.querySelector('.msg-bubble').textContent = text;
   }
   document.getElementById('chatArea').scrollTop = 9999;
 }

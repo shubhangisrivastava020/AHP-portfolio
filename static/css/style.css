@@ -1125,6 +1125,59 @@ tbody td {
   border: 1px solid var(--border);
 }
 
+/* ── AI response card (INSIGHT + QUESTION) ── */
+.msg-card {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.msg-insight {
+  font-size: .86rem;
+  line-height: 1.65;
+  color: var(--text);
+  padding: 12px 16px;
+  background: rgba(22,27,39,.85);
+  border: 1px solid rgba(33,41,61,.9);
+  border-radius: 14px 14px 14px 4px;
+  word-break: break-word;
+}
+.msg-typing {
+  color: var(--muted);
+  font-style: italic;
+}
+.msg-question {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 11px 14px;
+  background: rgba(99,102,241,.1);
+  border: 1px solid rgba(99,102,241,.32);
+  border-radius: 12px;
+  transition: opacity .4s ease;
+}
+.msg-q-icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(99,102,241,.3);
+  color: #a5b4fc;
+  font-weight: 800;
+  font-size: .78rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.msg-q-text {
+  font-size: .83rem;
+  color: #a5b4fc;
+  line-height: 1.6;
+  font-style: italic;
+}
+
 .chat-input-row {
   display: flex;
   gap: 10px;

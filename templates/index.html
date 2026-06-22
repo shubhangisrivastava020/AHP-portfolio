@@ -1008,14 +1008,13 @@
             <div class="chat-area" id="chatArea">
               <div class="msg bot">
                 <div class="msg-avatar-ai">AI</div>
-                <div class="msg-bubble">Hello! I'm your AI Investment Advisor, powered by Claude claude-sonnet-4-6 and the AHP framework.
-
-In <strong>ADVISOR</strong> mode I can tell you exactly how much to invest in each asset class (in dollars), explain the reasoning behind every allocation, challenge your choices with empirical data, and compare your portfolio to real pension funds like CalPERS and APG.
-
-To get started:
-• Enter your Anthropic API key in the top-right bar
-• Click ▶ Run Model to compute your AHP allocation
-• Then ask me anything — e.g. "How much should I invest in each asset class?"</div>
+                <div class="msg-card">
+                  <div class="msg-insight">I'm your AI Investment Advisor — enter your Anthropic API key (top right), click ▶ Run Model, then ask me anything about your allocation in dollars, risks, or how you compare to CalPERS.</div>
+                  <div class="msg-question">
+                    <span class="msg-q-icon">?</span>
+                    <span class="msg-q-text">Once the model runs — which asset class do you most want to challenge?</span>
+                  </div>
+                </div>
               </div>
             </div>
             <div class="chat-input-row">
