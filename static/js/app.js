@@ -96,6 +96,7 @@ async function runModel() {
     fund_name:     document.getElementById('cfgFund')?.value || 'Liberty Bell Pension Fund',
     aum:           parseFloat(document.getElementById('cfgAum')?.value || '3.2'),
     scenario:      document.getElementById('cfgScenario')?.value || 'Steady Growth',
+    funded_ratio:  parseFloat(document.getElementById('cfgFunded')?.value || '87'),
     n_simulations: 1000,
   };
 

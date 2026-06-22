@@ -37,8 +37,7 @@ def platform():
     return render_template('platform.html')
 
 
-# Scenario → criteria pairwise comparisons
-# (Return vs Risk, Return vs Liquidity, Risk vs Liquidity)
+# ── Scenario → criteria pairwise comparisons ──────────────────
 _SCENARIO_CRITERIA = {
     "Steady Growth": {
         ("Return","Risk"): 2, ("Return","Liquidity"): 5,
@@ -53,7 +52,7 @@ _SCENARIO_CRITERIA = {
         ("Liquidity","Diversification"): 1,
     },
     "Stagflation": {
-        ("Return","Risk"): 0.33, ("Return","Liquidity"): 2,
+        ("Return","Risk"): 1/3, ("Return","Liquidity"): 2,
         ("Return","Diversification"): 1,
         ("Risk","Liquidity"): 4, ("Risk","Diversification"): 3,
         ("Liquidity","Diversification"): 1,
@@ -66,22 +65,177 @@ _SCENARIO_CRITERIA = {
     },
 }
 
+# ── Scenario → asset Return scores ────────────────────────────
+# Higher score = better expected return under this macro environment.
+_SCENARIO_ASSET_RETURN = {
+    "Bull Market": {
+        # Equities dominate aggressively; bonds sidelined
+        ("Small Stocks","Large Stocks"):3, ("Small Stocks","Corporate Bonds"):7,
+        ("Small Stocks","Government Bonds"):9, ("Small Stocks","Real Estate"):4,
+        ("Small Stocks","Money Market"):9, ("Small Stocks","Commodities"):5,
+        ("Large Stocks","Corporate Bonds"):4, ("Large Stocks","Government Bonds"):7,
+        ("Large Stocks","Real Estate"):3, ("Large Stocks","Money Market"):9,
+        ("Large Stocks","Commodities"):3,
+        ("Corporate Bonds","Government Bonds"):2, ("Corporate Bonds","Real Estate"):1/2,
+        ("Corporate Bonds","Money Market"):4, ("Corporate Bonds","Commodities"):1/2,
+        ("Government Bonds","Real Estate"):1/4, ("Government Bonds","Money Market"):3,
+        ("Government Bonds","Commodities"):1/3,
+        ("Real Estate","Money Market"):5, ("Real Estate","Commodities"):2,
+        ("Money Market","Commodities"):1/4,
+    },
+    "Stagflation": {
+        # Commodities & Real Estate are the inflation hedges; gov bonds are worst
+        ("Small Stocks","Large Stocks"):1, ("Small Stocks","Corporate Bonds"):2,
+        ("Small Stocks","Government Bonds"):5, ("Small Stocks","Real Estate"):1/2,
+        ("Small Stocks","Money Market"):3, ("Small Stocks","Commodities"):1/3,
+        ("Large Stocks","Corporate Bonds"):2, ("Large Stocks","Government Bonds"):5,
+        ("Large Stocks","Real Estate"):1/2, ("Large Stocks","Money Market"):3,
+        ("Large Stocks","Commodities"):1/3,
+        ("Corporate Bonds","Government Bonds"):2, ("Corporate Bonds","Real Estate"):1/3,
+        ("Corporate Bonds","Money Market"):2, ("Corporate Bonds","Commodities"):1/5,
+        ("Government Bonds","Real Estate"):1/5, ("Government Bonds","Money Market"):1,
+        ("Government Bonds","Commodities"):1/7,
+        ("Real Estate","Money Market"):4, ("Real Estate","Commodities"):1/2,
+        ("Money Market","Commodities"):1/5,
+    },
+    "Deflation": {
+        # Government bonds price-appreciate as rates fall; commodities worst
+        ("Small Stocks","Large Stocks"):1, ("Small Stocks","Corporate Bonds"):1/2,
+        ("Small Stocks","Government Bonds"):1/5, ("Small Stocks","Real Estate"):1,
+        ("Small Stocks","Money Market"):2, ("Small Stocks","Commodities"):3,
+        ("Large Stocks","Corporate Bonds"):1/2, ("Large Stocks","Government Bonds"):1/5,
+        ("Large Stocks","Real Estate"):1, ("Large Stocks","Money Market"):2,
+        ("Large Stocks","Commodities"):3,
+        ("Corporate Bonds","Government Bonds"):1/3, ("Corporate Bonds","Real Estate"):2,
+        ("Corporate Bonds","Money Market"):4, ("Corporate Bonds","Commodities"):5,
+        ("Government Bonds","Real Estate"):5, ("Government Bonds","Money Market"):7,
+        ("Government Bonds","Commodities"):8,
+        ("Real Estate","Money Market"):2, ("Real Estate","Commodities"):3,
+        ("Money Market","Commodities"):1,
+    },
+}
+
+# ── Scenario → asset Risk scores ──────────────────────────────
+# Higher score = SAFER (lower actual risk) under this macro environment.
+_SCENARIO_ASSET_RISK = {
+    "Bull Market": {
+        # Risk appetite rises — equities penalised less
+        ("Small Stocks","Large Stocks"):1/2, ("Small Stocks","Corporate Bonds"):1/3,
+        ("Small Stocks","Government Bonds"):1/5, ("Small Stocks","Real Estate"):1/2,
+        ("Small Stocks","Money Market"):1/7, ("Small Stocks","Commodities"):1/2,
+        ("Large Stocks","Corporate Bonds"):1/2, ("Large Stocks","Government Bonds"):1/3,
+        ("Large Stocks","Real Estate"):1/2, ("Large Stocks","Money Market"):1/5,
+        ("Large Stocks","Commodities"):1,
+        ("Corporate Bonds","Government Bonds"):1/2, ("Corporate Bonds","Real Estate"):2,
+        ("Corporate Bonds","Money Market"):1/3, ("Corporate Bonds","Commodities"):2,
+        ("Government Bonds","Real Estate"):3, ("Government Bonds","Money Market"):1/2,
+        ("Government Bonds","Commodities"):4,
+        ("Real Estate","Money Market"):1/4, ("Real Estate","Commodities"):1,
+        ("Money Market","Commodities"):5,
+    },
+    "Stagflation": {
+        # Extreme risk aversion; govts and cash dominate; commodities volatile
+        ("Small Stocks","Large Stocks"):1/2, ("Small Stocks","Corporate Bonds"):1/5,
+        ("Small Stocks","Government Bonds"):1/9, ("Small Stocks","Real Estate"):1/3,
+        ("Small Stocks","Money Market"):1/9, ("Small Stocks","Commodities"):1/2,
+        ("Large Stocks","Corporate Bonds"):1/4, ("Large Stocks","Government Bonds"):1/8,
+        ("Large Stocks","Real Estate"):1/2, ("Large Stocks","Money Market"):1/9,
+        ("Large Stocks","Commodities"):1,
+        ("Corporate Bonds","Government Bonds"):1/3, ("Corporate Bonds","Real Estate"):2,
+        ("Corporate Bonds","Money Market"):1/5, ("Corporate Bonds","Commodities"):3,
+        ("Government Bonds","Real Estate"):5, ("Government Bonds","Money Market"):1/2,
+        ("Government Bonds","Commodities"):8,
+        ("Real Estate","Money Market"):1/5, ("Real Estate","Commodities"):2,
+        ("Money Market","Commodities"):9,
+    },
+    "Deflation": {
+        # Flight to quality: government bonds = safest; commodities destroyed
+        ("Small Stocks","Large Stocks"):1/2, ("Small Stocks","Corporate Bonds"):1/4,
+        ("Small Stocks","Government Bonds"):1/9, ("Small Stocks","Real Estate"):1/3,
+        ("Small Stocks","Money Market"):1/8, ("Small Stocks","Commodities"):1/3,
+        ("Large Stocks","Corporate Bonds"):1/3, ("Large Stocks","Government Bonds"):1/9,
+        ("Large Stocks","Real Estate"):1/2, ("Large Stocks","Money Market"):1/7,
+        ("Large Stocks","Commodities"):1/2,
+        ("Corporate Bonds","Government Bonds"):1/4, ("Corporate Bonds","Real Estate"):2,
+        ("Corporate Bonds","Money Market"):1/3, ("Corporate Bonds","Commodities"):3,
+        ("Government Bonds","Real Estate"):6, ("Government Bonds","Money Market"):1,
+        ("Government Bonds","Commodities"):9,
+        ("Real Estate","Money Market"):1/6, ("Real Estate","Commodities"):1,
+        ("Money Market","Commodities"):7,
+    },
+}
+
+# ── Scenario → policy constraints ─────────────────────────────
+_SCENARIO_CONSTRAINTS = {
+    "Steady Growth": {
+        "Small Stocks":(0.05,0.25), "Large Stocks":(0.15,0.40),
+        "Corporate Bonds":(0.05,0.20), "Government Bonds":(0.10,0.30),
+        "Real Estate":(0.05,0.15), "Money Market":(0.02,0.10),
+        "Commodities":(0.00,0.10),
+    },
+    "Bull Market": {
+        "Small Stocks":(0.10,0.30), "Large Stocks":(0.20,0.45),
+        "Corporate Bonds":(0.05,0.15), "Government Bonds":(0.05,0.20),
+        "Real Estate":(0.05,0.18), "Money Market":(0.02,0.08),
+        "Commodities":(0.02,0.10),
+    },
+    "Stagflation": {
+        "Small Stocks":(0.03,0.15), "Large Stocks":(0.08,0.25),
+        "Corporate Bonds":(0.05,0.15), "Government Bonds":(0.15,0.35),
+        "Real Estate":(0.08,0.20), "Money Market":(0.05,0.15),
+        "Commodities":(0.05,0.20),
+    },
+    "Deflation": {
+        "Small Stocks":(0.03,0.12), "Large Stocks":(0.08,0.22),
+        "Corporate Bonds":(0.08,0.22), "Government Bonds":(0.25,0.45),
+        "Real Estate":(0.03,0.12), "Money Market":(0.05,0.18),
+        "Commodities":(0.00,0.05),
+    },
+}
+
 @app.route('/api/run', methods=['POST'])
 def run_ahp():
     """Run full AHP model and return results."""
-    data = request.json or {}
-    fund_name = data.get('fund_name', 'Liberty Bell Pension Fund')
-    aum       = float(data.get('aum', 3.2))
-    scenario  = data.get('scenario', 'Steady Growth')
-    n_mc      = int(data.get('n_simulations', 1000))
+    data         = request.json or {}
+    fund_name    = data.get('fund_name', 'Liberty Bell Pension Fund')
+    aum          = float(data.get('aum', 3.2))
+    scenario     = data.get('scenario', 'Steady Growth')
+    funded_ratio = float(data.get('funded_ratio', 87))
+    n_mc         = int(data.get('n_simulations', 1000))
 
     model = build_liberty_bell_model()
     model.fund_name    = fund_name
     model.aum_billions = aum
 
-    # Apply scenario-specific criteria balance
+    # 1. Scenario-specific criteria balance (how much Return vs Risk matters)
     if scenario in _SCENARIO_CRITERIA:
         model.set_criteria_matrix(_SCENARIO_CRITERIA[scenario])
+
+    # 2. Scenario-specific asset matrices (which assets win on Return / Risk)
+    if scenario in _SCENARIO_ASSET_RETURN:
+        model.set_asset_matrix("Return", _SCENARIO_ASSET_RETURN[scenario])
+    if scenario in _SCENARIO_ASSET_RISK:
+        model.set_asset_matrix("Risk", _SCENARIO_ASSET_RISK[scenario])
+
+    # 3. Scenario-specific policy constraints
+    if scenario in _SCENARIO_CONSTRAINTS:
+        model.constraints = _SCENARIO_CONSTRAINTS[scenario].copy()
+
+    # 4. Funded-ratio overlay: underfunded (<85%) tightens equity, raises bond floor
+    if funded_ratio < 85:
+        shift = min(0.08, (85 - funded_ratio) / 100)  # up to 8pp shift
+        for asset in ["Small Stocks", "Large Stocks"]:
+            lo, hi = model.constraints[asset]
+            model.constraints[asset] = (max(0, lo - shift/2), max(lo, hi - shift))
+        for asset in ["Government Bonds", "Money Market"]:
+            lo, hi = model.constraints[asset]
+            model.constraints[asset] = (min(hi, lo + shift/2), min(0.50, hi + shift/2))
+    elif funded_ratio > 110:
+        # Well-funded: allow more equity upside
+        shift = min(0.05, (funded_ratio - 110) / 200)
+        for asset in ["Small Stocks", "Large Stocks"]:
+            lo, hi = model.constraints[asset]
+            model.constraints[asset] = (lo, min(0.55, hi + shift))
 
     result = model.run()
     mc     = model.run_monte_carlo(n_simulations=n_mc)
