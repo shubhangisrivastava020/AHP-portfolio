@@ -217,6 +217,11 @@ function renderDashboard(data) {
   }
 }
 
+// Stub — keeps renderDashboard from crashing on pages without a breakdown panel
+function updateDecisionBreakdown(result, evidence) {
+  updateChatContextStatus();
+}
+
 // ── MONTE CARLO ───────────────────────────────────────────────
 function renderMonteCarlo(data) {
   const mc = data.monte_carlo;
@@ -300,12 +305,17 @@ function renderMatrix() {
   const assetClasses = ['Small Stocks','Large Stocks','Corp Bonds','Govt Bonds','Real Estate','Money Market','Commodities'];
   const labels = LABELS[key] || assetClasses;
 
-  let head = '<thead><tr><th></th>' + labels.map(l => `<th>${l.split(' ')[0]}</th>`).join('') + '</tr></thead>';
+  const mat = cr.matrix;
+  const shortLabel = l => l.length > 8 ? l.split(' ')[0] : l;
+  let head = '<thead><tr><th></th>' + labels.map(l => `<th title="${l}">${shortLabel(l)}</th>`).join('') + '</tr></thead>';
   let body = '<tbody>' + labels.map((r, i) =>
-    `<tr><td style="font-weight:600;color:var(--muted)">${r.split(' ')[0]}</td>` +
+    `<tr><td style="font-weight:600;color:var(--muted)">${shortLabel(r)}</td>` +
     labels.map((c, j) => {
       if (i === j) return '<td style="color:var(--muted)">1.000</td>';
-      return `<td style="color:var(--text)">—</td>`;
+      if (!mat) return `<td style="color:var(--text)">—</td>`;
+      const val = mat[i][j];
+      const color = val > 1 ? 'var(--accent)' : val < 1 ? '#f87171' : 'var(--muted)';
+      return `<td style="color:${color}">${val >= 1 ? val.toFixed(2) : '1/' + (1/val).toFixed(2)}</td>`;
     }).join('') + '</tr>'
   ).join('') + '</tbody>';
 
@@ -1437,6 +1447,18 @@ document.getElementById('chatMode')?.addEventListener('change', function() {
   document.getElementById('modeDesc').textContent = modeDescs[this.value];
 });
 
+function setAdvisorMode(mode, btn) {
+  // Update hidden select
+  const sel = document.getElementById('chatMode');
+  if (sel) sel.value = mode;
+  // Update pill active state
+  document.querySelectorAll('.adv-mode-pill').forEach(p => p.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  // Update mode description
+  const descEl = document.getElementById('modeDesc');
+  if (descEl) descEl.textContent = modeDescs[mode] || '';
+}
+
 function sendQuick(msg) {
   document.getElementById('chatInput').value = msg;
   sendChat();
@@ -1515,42 +1537,43 @@ async function sendChat() {
     const reply  = data.reply;
     const parsed = parseBotResponse(reply);
     const msgEl  = document.getElementById(typingId);
+    const chat   = document.getElementById('chatArea');
+
     if (msgEl && parsed) {
-      // Build card skeleton — insight empty, question hidden
+      const dataHtml = parsed.data ? `<div class="msg-data">${renderMarkdown(parsed.data)}</div>` : '';
+      // Skeleton: insight animates word-by-word; DATA + QUESTION fade in after
       msgEl.innerHTML = `
         <div class="msg-avatar-ai">AI</div>
         <div class="msg-card">
-          <div class="msg-insight" id="${typingId}-insight"></div>
-          <div class="msg-question" id="${typingId}-q" style="opacity:0;transition:opacity .4s">
+          <div class="msg-insight" id="${typingId}-ins"></div>
+          <div id="${typingId}-data" style="opacity:0;transition:opacity .35s">${dataHtml}</div>
+          <div class="msg-question" id="${typingId}-q" style="opacity:0;transition:opacity .35s">
             <span class="msg-q-icon">?</span>
-            <span class="msg-q-text">${escHtml(parsed.question)}</span>
+            <span class="msg-q-text">${safeMd(parsed.question)}</span>
           </div>
         </div>`;
-      // Typewriter the insight
-      const insightEl = document.getElementById(typingId + '-insight');
+      // Word-by-word INSIGHT
+      const insEl = document.getElementById(`${typingId}-ins`);
       const words = parsed.insight.split(' ');
       let revealed = '';
       for (let i = 0; i < words.length; i++) {
         revealed += (i > 0 ? ' ' : '') + words[i];
-        insightEl.textContent = revealed;
-        document.getElementById('chatArea').scrollTop = 9999;
-        await new Promise(r => setTimeout(r, 22));
+        insEl.innerHTML = safeMd(revealed);
+        chat.scrollTop = 9999;
+        await new Promise(r => setTimeout(r, 20));
       }
-      // Fade in the question card
-      await new Promise(r => setTimeout(r, 180));
-      const qEl = document.getElementById(typingId + '-q');
+      // Fade in DATA + QUESTION
+      await new Promise(r => setTimeout(r, 150));
+      const dataEl = document.getElementById(`${typingId}-data`);
+      const qEl    = document.getElementById(`${typingId}-q`);
+      if (dataEl) dataEl.style.opacity = '1';
+      await new Promise(r => setTimeout(r, parsed.data ? 250 : 0));
       if (qEl) qEl.style.opacity = '1';
+      chat.scrollTop = 9999;
     } else if (msgEl) {
-      // Fallback: plain typewriter
-      const words = reply.split(' ');
-      let revealed = '';
-      const bubble = msgEl.querySelector('.msg-bubble') || msgEl;
-      for (let i = 0; i < words.length; i++) {
-        revealed += (i > 0 ? ' ' : '') + words[i];
-        bubble.innerHTML = revealed.replace(/\n/g,'<br>');
-        document.getElementById('chatArea').scrollTop = 9999;
-        await new Promise(r => setTimeout(r, 18));
-      }
+      // Fallback: render full markdown immediately
+      msgEl.innerHTML = buildBotHTML(reply, false);
+      chat.scrollTop = 9999;
     }
     state.chatHistory.push({ role: 'assistant', content: data.reply });
   } catch(e) {
@@ -1564,10 +1587,10 @@ function clearChat() {
     <div class="msg bot">
       <div class="msg-avatar-ai">AI</div>
       <div class="msg-card">
-        <div class="msg-insight">Ready for your questions. Run the model first (▶ Run Model), then ask me anything.</div>
+        <div class="msg-insight">I'm your institutional AI investment advisor. Enter your <strong>Anthropic API key</strong> above, run the model on the Dashboard, then ask me anything — allocation breakdowns, CalPERS comparisons, consistency audits, or scenario stress tests.</div>
         <div class="msg-question">
           <span class="msg-q-icon">?</span>
-          <span class="msg-q-text">What's the single biggest risk in your current allocation?</span>
+          <span class="msg-q-text">Once the model runs — do you want me to benchmark your allocation against CalPERS and flag the biggest divergences?</span>
         </div>
       </div>
     </div>`;
@@ -1588,35 +1611,85 @@ function resetAdvisor() {
 
 let msgCounter = 0;
 
+// ── MARKDOWN RENDERER ─────────────────────────────────────────
+function safeMd(text) {
+  let s = String(text).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  s = s.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+  s = s.replace(/`([^`]+)`/g,'<code class="msg-code">$1</code>');
+  return s;
+}
+
+function renderTable(rows) {
+  if (rows.length < 2) return rows.map(r=>`<div class="msg-para">${safeMd(r)}</div>`).join('');
+  const header = rows[0].split('|').filter(c=>c.trim()).map(c=>`<th>${safeMd(c.trim())}</th>`).join('');
+  const body = rows.slice(2).filter(r=>/\|/.test(r)).map(row => {
+    const cells = row.split('|').filter(c=>c.trim()).map(c=>`<td>${safeMd(c.trim())}</td>`).join('');
+    return `<tr>${cells}</tr>`;
+  }).join('');
+  return `<div class="msg-table-wrap"><table class="msg-table"><thead><tr>${header}</tr></thead><tbody>${body}</tbody></table></div>`;
+}
+
+function renderMarkdown(md) {
+  const lines = (md || '').split('\n');
+  let html = '', inList = false, tableBuffer = [];
+
+  const flushTable = () => { if (tableBuffer.length) { html += renderTable(tableBuffer); tableBuffer = []; } };
+  const flushList  = () => { if (inList) { html += '</ul>'; inList = false; } };
+
+  for (const line of lines) {
+    if (line.trim().startsWith('|')) {
+      flushList(); tableBuffer.push(line); continue;
+    }
+    flushTable();
+
+    const li = line.match(/^[\-•*]\s+(.+)/);
+    const ni = line.match(/^\d+\.\s+(.+)/);
+    if (li || ni) {
+      if (!inList) { html += '<ul class="msg-list">'; inList = true; }
+      html += `<li>${safeMd(li ? li[1] : ni[1])}</li>`; continue;
+    }
+    flushList();
+
+    const h = line.match(/^##\s+(.+)/);
+    if (h) { html += `<div class="msg-section-hdr">${safeMd(h[1])}</div>`; continue; }
+    if (!line.trim()) { html += '<div class="msg-br"></div>'; continue; }
+    html += `<div class="msg-para">${safeMd(line)}</div>`;
+  }
+  flushList(); flushTable();
+  return html;
+}
+
+// ── BOT RESPONSE PARSER ───────────────────────────────────────
 function parseBotResponse(text) {
-  // Parse INSIGHT: ... QUESTION: ... format
-  const iMatch = text.match(/INSIGHT:\s*([\s\S]+?)(?=\nQUESTION:|$)/i);
+  const iMatch = text.match(/INSIGHT:\s*([\s\S]+?)(?=\nDATA:|\nQUESTION:|$)/i);
+  const dMatch = text.match(/DATA:\s*([\s\S]+?)(?=\nQUESTION:|$)/i);
   const qMatch = text.match(/QUESTION:\s*([\s\S]+?)$/i);
   if (iMatch && qMatch) {
-    return { insight: iMatch[1].trim(), question: qMatch[1].trim() };
+    return { insight: iMatch[1].trim(), data: dMatch ? dMatch[1].trim() : null, question: qMatch[1].trim() };
   }
   return null;
 }
 
 function buildBotHTML(text, isTyping) {
   if (isTyping) {
-    return `<div class="msg-avatar-ai">AI</div><div class="msg-bubble msg-typing">…</div>`;
+    return `<div class="msg-avatar-ai">AI</div><div class="msg-bubble msg-typing"><span class="td"></span><span class="td"></span><span class="td"></span></div>`;
   }
   const parsed = parseBotResponse(text);
   if (parsed) {
+    const dataHtml = parsed.data ? `<div class="msg-data">${renderMarkdown(parsed.data)}</div>` : '';
     return `
       <div class="msg-avatar-ai">AI</div>
       <div class="msg-card">
-        <div class="msg-insight">${escHtml(parsed.insight)}</div>
+        <div class="msg-insight">${safeMd(parsed.insight)}</div>
+        ${dataHtml}
         <div class="msg-question">
           <span class="msg-q-icon">?</span>
-          <span class="msg-q-text">${escHtml(parsed.question)}</span>
+          <span class="msg-q-text">${safeMd(parsed.question)}</span>
         </div>
       </div>`;
   }
-  // Fallback: plain text
-  let html = escHtml(text).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
-  return `<div class="msg-avatar-ai">AI</div><div class="msg-bubble">${html}</div>`;
+  // Fallback: full markdown render
+  return `<div class="msg-avatar-ai">AI</div><div class="msg-body">${renderMarkdown(text)}</div>`;
 }
 
 function appendMsg(role, text) {

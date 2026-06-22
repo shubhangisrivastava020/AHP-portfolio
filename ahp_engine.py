@@ -454,6 +454,11 @@ class AHPModel:
         else:
             overall = "F"
 
+        # Attach matrix values to each cr_results entry so the UI can render them
+        for key, cr in self.cr_results.items():
+            if key in self.matrices:
+                cr["matrix"] = self.matrices[key].tolist()
+
         return {
             "raw_weights":         dict(zip(ASSET_CLASSES, raw.tolist())),
             "constrained_weights": dict(zip(ASSET_CLASSES, constrained.tolist())),

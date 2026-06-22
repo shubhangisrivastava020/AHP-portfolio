@@ -1125,58 +1125,105 @@ tbody td {
   border: 1px solid var(--border);
 }
 
-/* ── AI response card (INSIGHT + QUESTION) ── */
+/* ── AI response card ── */
 .msg-card {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 10px;
 }
 .msg-insight {
-  font-size: .86rem;
-  line-height: 1.65;
-  color: var(--text);
-  padding: 12px 16px;
-  background: rgba(22,27,39,.85);
-  border: 1px solid rgba(33,41,61,.9);
-  border-radius: 14px 14px 14px 4px;
+  font-size: .875rem; line-height: 1.7; color: var(--text);
+  padding: 14px 18px;
+  background: rgba(15,23,42,.9);
+  border: 1px solid rgba(51,65,85,.8);
+  border-left: 3px solid #6366f1;
+  border-radius: 0 12px 12px 0;
   word-break: break-word;
 }
-.msg-typing {
-  color: var(--muted);
-  font-style: italic;
+.msg-insight strong { color: #e2e8f0; }
+
+/* DATA section — markdown content */
+.msg-data {
+  background: rgba(15,23,42,.6);
+  border: 1px solid rgba(51,65,85,.6);
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: .82rem;
 }
-.msg-question {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 11px 14px;
-  background: rgba(99,102,241,.1);
-  border: 1px solid rgba(99,102,241,.32);
+.msg-body {
+  flex: 1; min-width: 0;
+  background: rgba(15,23,42,.9);
+  border: 1px solid rgba(51,65,85,.8);
   border-radius: 12px;
-  transition: opacity .4s ease;
+  padding: 14px 18px;
+  font-size: .875rem;
+}
+
+/* Markdown primitives */
+.msg-para   { line-height: 1.7; color: var(--text); margin-bottom: 4px; }
+.msg-br     { height: 8px; }
+.msg-list   { margin: 6px 0 6px 18px; padding: 0; }
+.msg-list li{ margin-bottom: 4px; line-height: 1.6; color: var(--text); font-size: .84rem; }
+.msg-section-hdr {
+  font-size: .72rem; font-weight: 700; letter-spacing: .07em;
+  text-transform: uppercase; color: #818cf8; margin: 10px 0 6px;
+}
+.msg-code {
+  background: rgba(99,102,241,.14); color: #a5b4fc;
+  padding: 1px 6px; border-radius: 4px; font-size: .82em;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+}
+
+/* Markdown tables in AI messages */
+.msg-table-wrap {
+  overflow-x: auto; border-radius: 8px; margin: 8px 0;
+  border: 1px solid rgba(51,65,85,.7);
+}
+.msg-table {
+  width: 100%; border-collapse: collapse; font-size: .80rem;
+}
+.msg-table thead tr { background: rgba(99,102,241,.15); }
+.msg-table th {
+  padding: 7px 12px; text-align: left; font-weight: 700;
+  color: #c7d2fe; font-size: .75rem; letter-spacing: .04em;
+  text-transform: uppercase; white-space: nowrap;
+  border-bottom: 1px solid rgba(99,102,241,.3);
+}
+.msg-table td {
+  padding: 7px 12px; color: var(--text); border-bottom: 1px solid rgba(51,65,85,.4);
+}
+.msg-table tbody tr:last-child td { border-bottom: none; }
+.msg-table tbody tr:hover { background: rgba(99,102,241,.06); }
+
+/* Typing indicator */
+.msg-typing {
+  display: flex; align-items: center; gap: 5px;
+  padding: 12px 16px;
+  background: rgba(15,23,42,.9); border: 1px solid rgba(51,65,85,.7);
+  border-radius: 12px;
+}
+.msg-typing .td {
+  width: 7px; height: 7px; border-radius: 50%; background: #6366f1;
+  animation: tdPulse 1.2s ease-in-out infinite;
+}
+.msg-typing .td:nth-child(2) { animation-delay: .2s; }
+.msg-typing .td:nth-child(3) { animation-delay: .4s; }
+@keyframes tdPulse { 0%,80%,100%{opacity:.25;transform:scale(.9)} 40%{opacity:1;transform:scale(1)} }
+
+/* Follow-up question card */
+.msg-question {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 11px 15px;
+  background: rgba(99,102,241,.08);
+  border: 1px solid rgba(99,102,241,.25);
+  border-radius: 10px; transition: opacity .35s ease;
 }
 .msg-q-icon {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: rgba(99,102,241,.3);
-  color: #a5b4fc;
-  font-weight: 800;
-  font-size: .78rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  margin-top: 1px;
+  width: 20px; height: 20px; border-radius: 50%;
+  background: rgba(99,102,241,.25); color: #a5b4fc;
+  font-weight: 800; font-size: .72rem;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; margin-top: 2px;
 }
-.msg-q-text {
-  font-size: .83rem;
-  color: #a5b4fc;
-  line-height: 1.6;
-  font-style: italic;
-}
+.msg-q-text { font-size: .82rem; color: #a5b4fc; line-height: 1.65; font-style: italic; }
 
 .chat-input-row {
   display: flex;
@@ -1787,3 +1834,85 @@ nav .nav-tab.active::after {
   margin-bottom: 14px;
 }
 .truncate     { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   AI ADVISOR — INSTITUTIONAL UI
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* Mode pills */
+.adv-mode-pill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+  background: rgba(15, 23, 42, 0.5);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  padding: 9px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.18s, border-color 0.18s, color 0.18s;
+  font-family: var(--font);
+}
+
+.adv-mode-pill:hover {
+  background: rgba(99, 102, 241, 0.08);
+  border-color: rgba(99, 102, 241, 0.3);
+  color: var(--text);
+}
+
+.adv-mode-pill.active {
+  background: rgba(99, 102, 241, 0.13);
+  border-color: rgba(99, 102, 241, 0.5);
+  color: var(--text);
+}
+
+.adv-mode-icon {
+  font-size: 1rem;
+  opacity: 0.7;
+  flex-shrink: 0;
+  width: 18px;
+  text-align: center;
+}
+
+.adv-mode-pill.active .adv-mode-icon { opacity: 1; }
+
+.adv-mode-name {
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+}
+
+.adv-mode-sub {
+  font-size: 0.68rem;
+  opacity: 0.6;
+  line-height: 1.3;
+  margin-top: 1px;
+}
+
+.adv-mode-pill.active .adv-mode-sub { opacity: 0.85; }
+
+/* Quick prompt buttons */
+.adv-quick-btn {
+  width: 100%;
+  text-align: left;
+  background: rgba(15, 23, 42, 0.4);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  padding: 8px 12px;
+  border-radius: 7px;
+  font-size: 0.76rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  font-family: var(--font);
+  line-height: 1.4;
+}
+
+.adv-quick-btn:hover {
+  background: rgba(37, 99, 235, 0.1);
+  border-color: rgba(37, 99, 235, 0.35);
+  color: #93c5fd;
+}

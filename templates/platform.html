@@ -662,147 +662,117 @@
       Powered by Claude. Enter your <strong>Anthropic API key</strong> in the top bar, run the model on Dashboard, then ask anything — get dollar-by-dollar allocation advice, challenge your decisions, stress-test scenarios, or run a full consistency audit.
     </div>
 
-    <div class="grid-2" style="align-items:start">
+    <!-- Institutional AI Advisor layout -->
+    <div style="display:grid;grid-template-columns:300px 1fr;gap:20px;align-items:start">
 
-      <!-- LEFT: Preferences + Stress Test -->
-      <div style="display:flex;flex-direction:column;gap:16px">
+      <!-- LEFT PANEL: Mode + Quick Prompts -->
+      <div style="display:flex;flex-direction:column;gap:14px">
 
-        <div class="card">
-          <div class="card-title">⚖️ Criteria Preferences</div>
-          <div style="font-size:.78rem;color:var(--muted);margin-bottom:12px;line-height:1.6">
-            Adjust pairwise preferences between criteria to personalise the model to your fund's mandate.
+        <!-- Mode selector -->
+        <div class="card" style="padding:18px">
+          <div style="font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:12px">Advisor Mode</div>
+          <div style="display:flex;flex-direction:column;gap:6px" id="modePills">
+            <button class="adv-mode-pill active" data-mode="ADVISOR" onclick="setAdvisorMode('ADVISOR',this)">
+              <span class="adv-mode-icon">◈</span>
+              <div><div class="adv-mode-name">Advisor</div><div class="adv-mode-sub">Allocation guide with exact $B figures</div></div>
+            </button>
+            <button class="adv-mode-pill" data-mode="CHALLENGE" onclick="setAdvisorMode('CHALLENGE',this)">
+              <span class="adv-mode-icon">⚡</span>
+              <div><div class="adv-mode-name">Challenge</div><div class="adv-mode-sub">Devil's advocate — attacks every assumption</div></div>
+            </button>
+            <button class="adv-mode-pill" data-mode="AUDIT" onclick="setAdvisorMode('AUDIT',this)">
+              <span class="adv-mode-icon">⊞</span>
+              <div><div class="adv-mode-name">Audit</div><div class="adv-mode-sub">CR violations — matrix consistency review</div></div>
+            </button>
+            <button class="adv-mode-pill" data-mode="FORECAST" onclick="setAdvisorMode('FORECAST',this)">
+              <span class="adv-mode-icon">◷</span>
+              <div><div class="adv-mode-name">Forecast</div><div class="adv-mode-sub">2026–2030 scenario stress tests</div></div>
+            </button>
+            <button class="adv-mode-pill" data-mode="COACH" onclick="setAdvisorMode('COACH',this)">
+              <span class="adv-mode-icon">◉</span>
+              <div><div class="adv-mode-name">Coach</div><div class="adv-mode-sub">Socratic — Guides, never answers directly</div></div>
+            </button>
           </div>
-          <div class="pref-tabs">
-            <button class="pref-tab active" onclick="switchPrefTab('saaty',this)">Saaty Scale</button>
-            <button class="pref-tab" onclick="switchPrefTab('verbal',this)">Verbal</button>
-            <button class="pref-tab" onclick="switchPrefTab('allocate',this)">Allocate</button>
-          </div>
-          <div class="pref-panel active" id="pref-saaty">
-            <div style="font-size:.75rem;color:var(--muted);margin-bottom:10px">Set pairwise importance (1=Equal, 9=Absolutely preferred)</div>
-            <div class="pref-pair-row">
-              <span class="pref-pair-label">Return vs Risk</span>
-              <span class="pref-ai-val">AI: 2.0</span>
-              <select class="form-control" id="prefSaaty_Return_Risk" style="width:200px;font-size:.78rem" onchange="checkPrefOverride(this,'2')">
-                <option value="0.333">1/3 — Prefer Risk</option>
-                <option value="1" selected>1 — Equal</option>
-                <option value="2">2 — Moderate Return</option>
-                <option value="3">3 — Moderate Return</option>
-                <option value="5">5 — Strong Return</option>
-                <option value="7">7 — Very Strong Return</option>
-                <option value="9">9 — Absolute Return</option>
-              </select>
-              <span class="pref-override-badge" id="badge_Return_Risk">Override</span>
-            </div>
-            <div class="pref-pair-row">
-              <span class="pref-pair-label">Return vs Liquidity</span>
-              <span class="pref-ai-val">AI: 5.0</span>
-              <select class="form-control" id="prefSaaty_Return_Liquidity" style="width:200px;font-size:.78rem" onchange="checkPrefOverride(this,'5')">
-                <option value="0.333">1/3 — Prefer Liquidity</option>
-                <option value="1">1 — Equal</option>
-                <option value="3">3 — Moderate Return</option>
-                <option value="5" selected>5 — Strong Return</option>
-                <option value="7">7 — Very Strong Return</option>
-                <option value="9">9 — Absolute Return</option>
-              </select>
-              <span class="pref-override-badge" id="badge_Return_Liquidity">Override</span>
-            </div>
-            <div class="pref-pair-row">
-              <span class="pref-pair-label">Risk vs Liquidity</span>
-              <span class="pref-ai-val">AI: 3.0</span>
-              <select class="form-control" id="prefSaaty_Risk_Liquidity" style="width:200px;font-size:.78rem" onchange="checkPrefOverride(this,'3')">
-                <option value="0.333">1/3 — Prefer Liquidity</option>
-                <option value="1">1 — Equal</option>
-                <option value="2">2 — Moderate Risk</option>
-                <option value="3" selected>3 — Moderate Risk</option>
-                <option value="5">5 — Strong Risk</option>
-              </select>
-              <span class="pref-override-badge" id="badge_Risk_Liquidity">Override</span>
-            </div>
-          </div>
-          <div class="pref-panel" id="pref-verbal" style="display:none">
-            <div style="font-size:.78rem;color:var(--muted);padding:12px 0">Describe your fund's mandate in plain language. The AI Advisor will interpret it and map to AHP weights.</div>
-            <textarea class="form-control" rows="3" placeholder="e.g. 'We are a conservative fund focused on capital preservation with a 10-year horizon...'" style="width:100%;resize:vertical"></textarea>
-          </div>
-          <div class="pref-panel" id="pref-allocate" style="display:none">
-            <div style="font-size:.78rem;color:var(--muted);padding:12px 0">Directly assign target allocation % to each asset class. The system will back-solve the implied AHP weights.</div>
-            <div id="directAllocInputs"></div>
-          </div>
+          <select id="chatMode" style="display:none">
+            <option value="ADVISOR">ADVISOR</option>
+            <option value="CHALLENGE">CHALLENGE</option>
+            <option value="COACH">COACH</option>
+            <option value="AUDIT">AUDIT</option>
+            <option value="FORECAST">FORECAST</option>
+          </select>
         </div>
 
-        <!-- Quick Insights -->
-        <div class="card">
-          <div class="card-title">💡 Quick AI Prompts</div>
-          <div style="font-size:.78rem;color:var(--muted);margin-bottom:14px;line-height:1.6">
-            Click a prompt to instantly ask the AI Advisor.
-          </div>
-          <div style="display:flex;flex-direction:column;gap:8px">
-            <button class="chat-action-btn" style="text-align:left;white-space:normal;height:auto;padding:10px 14px;line-height:1.5" onclick="document.getElementById('chatInput').value='How much should I invest in each asset class given my fund configuration?';sendChat()">📊 How much to invest in each asset class?</button>
-            <button class="chat-action-btn" style="text-align:left;white-space:normal;height:auto;padding:10px 14px;line-height:1.5" onclick="document.getElementById('chatInput').value='What are my biggest portfolio risks and how should I mitigate them?';sendChat()">🛡️ What are my biggest risks?</button>
-            <button class="chat-action-btn" style="text-align:left;white-space:normal;height:auto;padding:10px 14px;line-height:1.5" onclick="document.getElementById('chatInput').value='Compare my allocation to CalPERS and identify key differences.';sendChat()">🏛️ Compare to CalPERS</button>
-            <button class="chat-action-btn" style="text-align:left;white-space:normal;height:auto;padding:10px 14px;line-height:1.5" onclick="document.getElementById('chatInput').value='Run a consistency audit on my AHP matrix and flag any inconsistencies.';sendChat()">🔍 Consistency audit</button>
-            <button class="chat-action-btn" style="text-align:left;white-space:normal;height:auto;padding:10px 14px;line-height:1.5" onclick="document.getElementById('chatInput').value='What happens to my allocation if we enter a stagflation environment?';sendChat()">📉 Stagflation stress test</button>
-          </div>
-          <div style="margin-top:16px;padding:10px 14px;background:rgba(99,102,241,.06);border:1px solid rgba(99,102,241,.15);border-radius:8px;font-size:.76rem;color:var(--muted);line-height:1.6">
-            For practitioner profiles and stress tests, see the <strong style="color:var(--accent)">Dashboard → Advanced Analysis</strong> section.
+        <!-- Live model context -->
+        <div class="card" style="padding:16px">
+          <div style="font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:10px">Model Context</div>
+          <div id="chatContextStatus" style="font-size:.78rem;color:var(--muted);line-height:1.6">No model run yet — click <strong>▶ Run Model</strong> on Dashboard first</div>
+        </div>
+
+        <!-- Quick prompts -->
+        <div class="card" style="padding:16px">
+          <div style="font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:12px">Quick Prompts</div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <button class="adv-quick-btn" onclick="sendQuick('Give me the full dollar breakdown of my allocation and flag anything outside pension fund norms.')">Full allocation breakdown</button>
+            <button class="adv-quick-btn" onclick="sendQuick('Compare my allocation to CalPERS, Ontario Teachers, and APG. Show a table of differences.')">Benchmark vs CalPERS / APG</button>
+            <button class="adv-quick-btn" onclick="sendQuick('Run a full consistency audit. List all 10 matrices with their CR values and flag any above 0.10.')">Full consistency audit</button>
+            <button class="adv-quick-btn" onclick="sendQuick('Stress test my allocation under stagflation. What happens to each asset class and my funded ratio?')">Stagflation stress test</button>
+            <button class="adv-quick-btn" onclick="sendQuick('What are the top 3 risks in my current portfolio and what specific changes would reduce them?')">Top 3 portfolio risks</button>
+            <button class="adv-quick-btn" onclick="sendQuick('If my funded ratio drops to 75%, what allocation changes are required to meet regulatory minimums?')">Funded ratio crisis scenario</button>
           </div>
         </div>
 
       </div>
 
-      <!-- RIGHT: Chat -->
-      <div>
-        <div class="card" style="padding:0;overflow:hidden">
-          <div style="padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
-            <span style="font-size:.85rem;font-weight:600">AI Investment Advisor</span>
-            <div style="display:flex;gap:8px;align-items:center">
-              <span id="chatModelBadge" style="font-size:.7rem;background:rgba(37,99,235,.15);color:var(--accent2);padding:2px 8px;border-radius:12px;border:1px solid rgba(37,99,235,.3)">claude-sonnet-4-6</span>
-              <button onclick="resetAdvisor()" style="background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);color:#ef4444;font-size:.75rem;padding:2px 10px;border-radius:6px;cursor:pointer">↺ Reset</button>
-              <button onclick="clearChat()" style="background:none;border:none;color:var(--muted);font-size:.8rem;cursor:pointer">Clear</button>
+      <!-- RIGHT PANEL: Chat -->
+      <div class="card" style="padding:0;overflow:hidden;display:flex;flex-direction:column">
+
+        <!-- Chat header -->
+        <div style="padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:rgba(15,23,42,.6)">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#6366f1,#2563eb);display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:800;color:#fff">AI</div>
+            <div>
+              <div style="font-size:.88rem;font-weight:700;color:var(--text)">AI Investment Advisor</div>
+              <div style="font-size:.7rem;color:var(--muted)">Powered by Claude — institutional portfolio intelligence</div>
             </div>
           </div>
-          <div style="padding:16px">
-            <div style="margin-bottom:12px">
-              <select class="chat-mode-select" id="chatMode" style="width:100%;margin-bottom:8px">
-                <option value="ADVISOR">ADVISOR — Investment allocation guide</option>
-                <option value="CHALLENGE">CHALLENGE — Devil's advocate (empirical)</option>
-                <option value="COACH">COACH — Socratic guide</option>
-                <option value="AUDIT">AUDIT — Consistency checker</option>
-                <option value="FORECAST">FORECAST — Scenario stress test</option>
-              </select>
-              <div style="font-size:.78rem;color:var(--muted);line-height:1.55" id="modeDesc">
-                Tells you exactly how much to invest in each asset class, challenges your choices, and compares to real pension funds.
-              </div>
-              <div style="margin-top:8px;padding:7px 10px;background:var(--surface2);border-radius:6px;border:1px solid var(--border)">
-                <div style="font-size:.68rem;color:var(--muted);margin-bottom:3px;text-transform:uppercase;letter-spacing:.04em">Model Context</div>
-                <div id="chatContextStatus" style="font-size:.76rem;color:var(--muted)">No model run yet — click ▶ Run Model first</div>
-              </div>
-            </div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <span style="font-size:.68rem;background:rgba(37,99,235,.15);color:#60a5fa;padding:3px 9px;border-radius:10px;border:1px solid rgba(37,99,235,.3);font-weight:600">claude-sonnet-4-6</span>
+            <button onclick="resetAdvisor()" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);color:#f87171;font-size:.72rem;padding:3px 10px;border-radius:6px;cursor:pointer;font-family:inherit">↺ Reset</button>
+            <button onclick="clearChat()" style="background:none;border:1px solid var(--border);color:var(--muted);font-size:.72rem;padding:3px 10px;border-radius:6px;cursor:pointer;font-family:inherit">Clear</button>
+          </div>
+        </div>
 
-            <div class="chat-action-btns">
-              <button class="chat-action-btn" onclick="sendChallengeBtn()">⚔ Challenge My Decision</button>
-              <button class="chat-action-btn" onclick="sendCompetitorBtn()">🏛 Predict Competitor Moves</button>
-            </div>
+        <!-- Mode description bar -->
+        <div style="padding:8px 20px;border-bottom:1px solid var(--border);background:rgba(99,102,241,.04)">
+          <div id="modeDesc" style="font-size:.75rem;color:#818cf8;font-style:italic">
+            Advisor mode — gives exact $B allocations, benchmarks against CalPERS/APG, flags risk
+          </div>
+        </div>
 
-            <div class="chat-area" id="chatArea">
-              <div class="msg bot">
-                <div class="msg-avatar-ai">AI</div>
-                <div class="msg-card">
-                  <div class="msg-insight">I'm your AI Investment Advisor — enter your Anthropic API key above, click ▶ Run Model on the Dashboard, then ask me anything about your allocation.</div>
-                  <div class="msg-question">
-                    <span class="msg-q-icon">?</span>
-                    <span class="msg-q-text">Once the model runs — which asset class do you most want to challenge?</span>
-                  </div>
-                </div>
+        <!-- Chat area -->
+        <div class="chat-area" id="chatArea" style="flex:1;min-height:420px;max-height:560px">
+          <div class="msg bot">
+            <div class="msg-avatar-ai">AI</div>
+            <div class="msg-card">
+              <div class="msg-insight">I'm your institutional AI investment advisor. Enter your <strong>Anthropic API key</strong> above, run the AHP model on the Dashboard, then ask me anything — allocation breakdowns, CalPERS comparisons, consistency audits, or scenario stress tests.</div>
+              <div class="msg-question">
+                <span class="msg-q-icon">?</span>
+                <span class="msg-q-text">Once the model runs — do you want me to benchmark your allocation against CalPERS and flag the biggest divergences?</span>
               </div>
-            </div>
-            <div class="chat-input-row">
-              <textarea class="chat-input" id="chatInput" placeholder="Ask about your portfolio…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}"></textarea>
-              <button class="chat-send" onclick="sendChat()">Send</button>
             </div>
           </div>
         </div>
-      </div>
 
+        <!-- Input area -->
+        <div style="padding:14px 16px;border-top:1px solid var(--border);background:rgba(15,23,42,.4)">
+          <div class="chat-input-row" style="margin-top:0">
+            <textarea class="chat-input" id="chatInput" placeholder="Ask anything — allocation analysis, risk audit, CalPERS comparison, funded ratio stress test…" rows="2" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}"></textarea>
+            <button class="chat-send" onclick="sendChat()" style="align-self:flex-end">Send</button>
+          </div>
+          <div style="margin-top:6px;font-size:.68rem;color:var(--muted)">Shift+Enter for new line · Enter to send · All responses cite exact model figures</div>
+        </div>
+
+      </div>
     </div>
   </div>
 
