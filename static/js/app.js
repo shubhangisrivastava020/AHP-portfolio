@@ -892,86 +892,77 @@ async function runForecast() {
 
     document.getElementById('foreEmpty').style.display   = 'none';
     document.getElementById('foreContent').style.display = 'block';
+    document.getElementById('ciContent').style.display   = 'none';
 
-    const af = data.forecast.annual_forecasts;
-    const years = Object.keys(af).map(Number).sort();
+    const af     = data.forecast.annual_forecasts;
+    const years  = Object.keys(af).map(Number).sort();
     const assets = state.constants?.asset_classes || Object.keys(af[years[0]].probability_weighted_allocation);
 
-    // Histogram: distribution of expected portfolio returns across years
-    const returnValues = years.map(y => af[y].portfolio_expected_return_pct);
-    const histBins = [0,2,4,6,8,10,12,14];
-    const histCounts = histBins.slice(0,-1).map((lo, i) => {
-      const hi = histBins[i+1];
-      return returnValues.filter(v => v >= lo && v < hi).length;
-    });
-    const histLabels = histBins.slice(0,-1).map((lo,i) => `${lo}–${histBins[i+1]}%`);
-
-    if (charts.fore) charts.fore.destroy();
-    charts.fore = new Chart(document.getElementById('foreChart').getContext('2d'), {
-      type: 'bar',
-      data: {
-        labels: histLabels,
-        datasets: [{
-          label: 'Years in return range',
-          data: histCounts,
-          backgroundColor: histCounts.map((_,i) => COLORS[i % COLORS.length]),
-          borderRadius: 6,
-        }],
-      },
-      options: {
-        responsive: true, maintainAspectRatio: false,
-        plugins:{
-          legend:{ display: false },
-          title:{ display:true, text:'Expected Return Distribution (2026–2030)', color:'#e2e8f0', font:{size:12} },
-        },
-        scales: {
-          x:{ ticks:{color:'#64748b'}, grid:{color:'#1e2d45'}, title:{display:true, text:'Return Range', color:'#64748b'} },
-          y:{ ticks:{color:'#64748b', stepSize:1}, grid:{color:'#1e2d45'}, title:{display:true, text:'Number of Years', color:'#64748b'} },
-        },
-      },
-    });
-
+    // ── Portfolio expected return line chart ──────────────────
     if (charts.foreRet) charts.foreRet.destroy();
+    const retVals = years.map(y => af[y].portfolio_expected_return_pct);
     charts.foreRet = new Chart(document.getElementById('foreRetChart').getContext('2d'), {
       type: 'line',
       data: {
         labels: years,
         datasets: [{
-          label: 'Expected Return %',
-          data:  years.map(y => af[y].portfolio_expected_return_pct),
-          borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,.1)',
-          tension: .4, pointRadius: 5, fill: true,
+          label: 'Portfolio Expected Return %',
+          data:  retVals,
+          borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,.12)',
+          tension: .35, pointRadius: 6, pointBackgroundColor: '#10b981', fill: true,
         }],
       },
       options: {
         responsive: true, maintainAspectRatio: false,
-        plugins:{ legend:{ labels:{ color:'#e2e8f0' } } },
+        plugins:{ legend:{ display:false } },
         scales: {
           x:{ ticks:{color:'#64748b'}, grid:{color:'#1e2d45'} },
-          y:{ ticks:{color:'#64748b', callback:v=>v+'%'}, grid:{color:'#1e2d45'} },
+          y:{ ticks:{color:'#64748b', callback:v=>v+'%'}, grid:{color:'#1e2d45'},
+              suggestedMin: Math.max(0, Math.min(...retVals) - 1),
+              suggestedMax: Math.max(...retVals) + 1 },
         },
       },
     });
 
-    document.getElementById('foreBody').innerHTML = assets.map(a => `
-      <tr>
-        <td style="font-weight:600">${a}</td>
-        ${years.map(y => `<td>${pct(af[y].probability_weighted_allocation[a])}</td>`).join('')}
-      </tr>`).join('');
+    // ── Scenario probability breakdown cards ──────────────────
+    const scenBreakdown = af[years[0]]?.scenario_breakdown || {};
+    const scenColors = ['#6366f1','#10b981','#f59e0b','#ef4444','#8b5cf6'];
+    const scenEl = document.getElementById('scenarioProbCards');
+    if (scenEl) {
+      scenEl.innerHTML = Object.entries(scenBreakdown).map(([name, s], i) => {
+        const pct100 = (s.probability * 100).toFixed(0);
+        return `
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+            <div style="width:38px;height:38px;border-radius:8px;background:${scenColors[i]}22;border:1px solid ${scenColors[i]}55;display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:800;color:${scenColors[i]};flex-shrink:0">${pct100}%</div>
+            <div>
+              <div style="font-size:.82rem;font-weight:600;color:var(--text)">${name}</div>
+              <div style="font-size:.73rem;color:var(--muted);margin-top:1px">
+                Top alloc: ${Object.entries(s.weights).sort((a,b)=>b[1]-a[1])[0][0].split(' ')[0]}
+                ${(Object.entries(s.weights).sort((a,b)=>b[1]-a[1])[0][1]*100).toFixed(1)}%
+              </div>
+            </div>
+            <div style="flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden">
+              <div style="height:100%;width:${pct100}%;background:${scenColors[i]};border-radius:3px"></div>
+            </div>
+          </div>`;
+      }).join('');
+    }
 
-    const attr = data.attribution.returns_attribution;
-    document.getElementById('attrBody').innerHTML = Object.entries(attr).map(([yr, d]) => `
-      <tr>
-        <td class="forecast-year">${yr}</td>
-        <td>${d.scenario}</td>
-        <td class="${d.actual_portfolio_return_pct >= 0 ? 'positive' : 'negative'}">${sign(d.actual_portfolio_return_pct)}%</td>
-        <td class="${d.model_portfolio_return_pct >= 0 ? 'positive' : 'negative'}">${sign(d.model_portfolio_return_pct)}%</td>
-        <td class="${d.difference_pct >= 0 ? 'positive' : 'negative'}">${d.difference_pct >= 0 ? '+' : ''}${d.difference_pct.toFixed(2)}%</td>
-      </tr>`).join('');
+    // ── Allocation table with expected return footer row ──────
+    document.getElementById('foreBody').innerHTML =
+      assets.map(a => `
+        <tr>
+          <td style="font-weight:600">${a}</td>
+          ${years.map(y => `<td>${pct(af[y].probability_weighted_allocation[a])}</td>`).join('')}
+        </tr>`).join('') +
+      `<tr style="border-top:2px solid var(--border);background:rgba(16,185,129,.06)">
+        <td style="font-weight:700;color:#10b981">Portfolio E[R]</td>
+        ${years.map(y => `<td style="font-weight:700;color:#10b981">${af[y].portfolio_expected_return_pct.toFixed(2)}%</td>`).join('')}
+      </tr>`;
 
-    toast('Forecast generated for ' + fund);
+    toast('Scenario forecast generated for ' + fund);
   } catch(e) { toast('Forecast error: ' + e.message, 'error'); }
-  finally { btn.disabled = false; btn.innerHTML = 'Generate Forecast'; }
+  finally { btn.disabled = false; btn.innerHTML = 'Scenario Forecast'; }
 }
 
 // ── PRACTITIONER STRESS TEST ─────────────────────────────────
@@ -1260,7 +1251,6 @@ function renderCIForecast(data) {
   renderPortReturnFan(data);
   renderAttributionChart(data);
   renderCIBandTable(data);
-  renderIRTable(data);
 
   // KPI row
   const kpiRow = document.getElementById('ciKpiRow');
