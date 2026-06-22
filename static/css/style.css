@@ -161,24 +161,46 @@ nav {
 .nav-logo {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 1.05rem;
-  font-weight: 800;
-  color: var(--text);
-  letter-spacing: -0.02em;
+  gap: 10px;
   flex-shrink: 0;
   user-select: none;
+  text-decoration: none;
 }
 
-.nav-logo .logo-ai {
-  background: linear-gradient(135deg, #60a5fa 0%, #2563eb 100%);
+.nav-logo-wordmark {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.nav-logo-line1 {
+  font-size: 1.22rem;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  display: flex;
+  align-items: baseline;
+  gap: 0;
+}
+
+.nav-logo-ai-enhanced {
+  color: #cbd5e1; /* silver */
+  font-weight: 800;
+}
+
+.nav-logo-ahp {
+  background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  font-weight: 900;
 }
 
-.nav-logo .logo-ahp {
-  color: var(--text);
+.nav-logo-line2 {
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: #64748b;
+  margin-top: 1px;
 }
 
 .nav-badge {
