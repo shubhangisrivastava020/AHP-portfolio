@@ -168,21 +168,7 @@ function renderDashboard(data) {
       <div class="alloc-usd">$${result.dollar_allocation[a].toFixed(3)}B</div>
     </div>`).join('');
 
-  if (charts.donut) charts.donut.destroy();
-  charts.donut = new Chart(document.getElementById('donutChart').getContext('2d'), {
-    type: 'doughnut',
-    data: {
-      labels: asset_classes,
-      datasets: [{ data: asset_classes.map(a => +(w[a]*100).toFixed(2)), backgroundColor: COLORS, borderWidth: 1, borderColor: '#111827' }],
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: {
-        legend: { position:'right', labels:{ color:'#e2e8f0', font:{size:11}, boxWidth:12 } },
-        tooltip: { callbacks: { label: ctx => ' ' + ctx.label + ': ' + ctx.parsed.toFixed(1) + '%' } },
-      },
-    },
-  });
+  if (charts.donut) { charts.donut.destroy(); charts.donut = null; }
 
   document.getElementById('crList').innerHTML = Object.entries(cr).map(([name, v]) => `
     <div class="cr-row">
@@ -201,25 +187,7 @@ function renderDashboard(data) {
     </span>
     <div style="font-size:.78rem;color:var(--muted);margin-top:6px">${result.rank_reversal_msg}</div>`;
 
-  const cw = result.criteria_weights || {};
-  if (charts.criteria) charts.criteria.destroy();
-  if (Object.keys(cw).length && document.getElementById('criteriaChart')) {
-  charts.criteria = new Chart(document.getElementById('criteriaChart').getContext('2d'), {
-    type: 'bar',
-    data: {
-      labels: Object.keys(cw),
-      datasets: [{ label: 'Weight', data: Object.values(cw).map(v => +(v*100).toFixed(2)), backgroundColor: COLORS, borderRadius: 5 }],
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend:{display:false} },
-      scales: {
-        x: { ticks:{ color:'#64748b' }, grid:{ color:'#1e2d45' } },
-        y: { ticks:{ color:'#64748b', callback: v => v+'%' }, grid:{ color:'#1e2d45' } },
-      },
-    },
-  });
-  } // end criteria chart guard
+  if (charts.criteria) { charts.criteria.destroy(); charts.criteria = null; }
 
   // Update decision breakdown (AI Advisor tab)
   updateDecisionBreakdown(result, state.evidence);
