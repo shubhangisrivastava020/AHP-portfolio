@@ -37,6 +37,35 @@ def platform():
     return render_template('platform.html')
 
 
+# Scenario → criteria pairwise comparisons
+# (Return vs Risk, Return vs Liquidity, Risk vs Liquidity)
+_SCENARIO_CRITERIA = {
+    "Steady Growth": {
+        ("Return","Risk"): 2, ("Return","Liquidity"): 5,
+        ("Return","Diversification"): 3,
+        ("Risk","Liquidity"): 3, ("Risk","Diversification"): 2,
+        ("Liquidity","Diversification"): 0.5,
+    },
+    "Bull Market": {
+        ("Return","Risk"): 4, ("Return","Liquidity"): 7,
+        ("Return","Diversification"): 5,
+        ("Risk","Liquidity"): 2, ("Risk","Diversification"): 2,
+        ("Liquidity","Diversification"): 1,
+    },
+    "Stagflation": {
+        ("Return","Risk"): 0.33, ("Return","Liquidity"): 2,
+        ("Return","Diversification"): 1,
+        ("Risk","Liquidity"): 4, ("Risk","Diversification"): 3,
+        ("Liquidity","Diversification"): 1,
+    },
+    "Deflation": {
+        ("Return","Risk"): 0.25, ("Return","Liquidity"): 0.5,
+        ("Return","Diversification"): 0.5,
+        ("Risk","Liquidity"): 0.5, ("Risk","Diversification"): 1,
+        ("Liquidity","Diversification"): 2,
+    },
+}
+
 @app.route('/api/run', methods=['POST'])
 def run_ahp():
     """Run full AHP model and return results."""
@@ -49,6 +78,10 @@ def run_ahp():
     model = build_liberty_bell_model()
     model.fund_name    = fund_name
     model.aum_billions = aum
+
+    # Apply scenario-specific criteria balance
+    if scenario in _SCENARIO_CRITERIA:
+        model.set_criteria_matrix(_SCENARIO_CRITERIA[scenario])
 
     result = model.run()
     mc     = model.run_monte_carlo(n_simulations=n_mc)
