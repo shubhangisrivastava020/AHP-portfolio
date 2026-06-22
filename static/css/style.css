@@ -1766,6 +1766,9 @@ nav .nav-tab.active::after {
   border-radius: 2px 2px 0 0;
 }
 
+/* ── Pulse animation for "updating…" indicator ──────────────── */
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
 /* ── Empty state improvement ─────────────────────────────────── */
 .empty {
   text-align: center;

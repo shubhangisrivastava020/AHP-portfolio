@@ -204,30 +204,28 @@
       <!-- KPI strip -->
       <div class="grid-4 section" id="kpiRow"></div>
 
-      <!-- Allocation + Donut -->
+      <!-- Allocation + Consistency side by side -->
       <div class="grid-2 section">
         <div class="card">
-          <div class="card-title">Portfolio Allocation</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+            <div class="card-title" style="margin:0">Portfolio Allocation</div>
+            <span id="allocUpdating" style="display:none;font-size:.72rem;color:#818cf8;animation:pulse 1s infinite">● updating…</span>
+          </div>
           <div id="allocBars"></div>
         </div>
         <div class="card">
-          <div class="card-title">Weight Distribution</div>
-          <div class="chart-wrap"><canvas id="donutChart"></canvas></div>
-        </div>
-      </div>
-
-      <!-- Consistency + Criteria Weights -->
-      <div class="grid-2 section">
-        <div class="card">
-          <div class="card-title">Consistency Audit — All Matrices</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+            <div class="card-title" style="margin:0">Consistency Audit — All Matrices</div>
+            <span id="crUpdating" style="display:none;font-size:.72rem;color:#818cf8;animation:pulse 1s infinite">● updating…</span>
+          </div>
           <div id="crList"></div>
           <div style="margin-top:14px" id="dualSynthResult"></div>
         </div>
-        <div class="card">
-          <div class="card-title">Criteria Weights</div>
-          <div class="chart-wrap"><canvas id="criteriaChart"></canvas></div>
-        </div>
       </div>
+
+      <!-- Hidden canvases needed by app.js (not displayed) -->
+      <canvas id="donutChart" style="display:none"></canvas>
+      <canvas id="criteriaChart" style="display:none"></canvas>
 
       <!-- Monte Carlo -->
       <div id="mcEmpty" class="empty" style="display:none"><div class="icon">🎲</div>Monte Carlo running…</div>
@@ -827,13 +825,6 @@
 
 <!-- Tab switcher defined BEFORE app.js so it works even if app.js errors -->
 <script>
-let _runTimer = null;
-function debouncedRun() {
-  if (!state.result) return; // only auto-rerun if model has been run once
-  clearTimeout(_runTimer);
-  _runTimer = setTimeout(runModel, 800);
-}
-
 function pShowTab(name) {
   // Hide every panel using inline style with !important — beats any CSS rule
   document.querySelectorAll('.ptab-panel').forEach(function(p) {

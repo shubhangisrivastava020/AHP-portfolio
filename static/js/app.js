@@ -33,6 +33,22 @@ window.addEventListener('DOMContentLoaded', async () => {
   loadEvidence();
 });
 
+// ── AUTO-RERUN ON CONFIG CHANGE ───────────────────────────────
+let _runTimer = null;
+function debouncedRun() {
+  if (!state.result) return;
+  const upd = document.getElementById('allocUpdating');
+  const crUpd = document.getElementById('crUpdating');
+  if (upd) upd.style.display = 'inline';
+  if (crUpd) crUpd.style.display = 'inline';
+  clearTimeout(_runTimer);
+  _runTimer = setTimeout(async () => {
+    await runModel();
+    if (upd) upd.style.display = 'none';
+    if (crUpd) crUpd.style.display = 'none';
+  }, 800);
+}
+
 // ── TAB NAVIGATION ────────────────────────────────────────────
 function showTab(name) {
   // Redirect removed tabs to dashboard
