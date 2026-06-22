@@ -168,15 +168,15 @@
         </div>
         <div>
           <label style="display:block;font-size:.72rem;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em;font-weight:600">AUM ($B)</label>
-          <input class="form-control" id="cfgAum" type="number" value="3.2" step="0.1" min="0.1">
+          <input class="form-control" id="cfgAum" type="number" value="3.2" step="0.1" min="0.1" oninput="debouncedRun()">
         </div>
         <div>
           <label style="display:block;font-size:.72rem;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em;font-weight:600">Funded Ratio %</label>
-          <input class="form-control" id="cfgFunded" type="number" value="87" step="1" min="1" max="200">
+          <input class="form-control" id="cfgFunded" type="number" value="87" step="1" min="1" max="200" oninput="debouncedRun()">
         </div>
         <div>
           <label style="display:block;font-size:.72rem;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em;font-weight:600">Scenario</label>
-          <select class="form-control" id="cfgScenario">
+          <select class="form-control" id="cfgScenario" onchange="if(state.result) runModel()">
             <option>Steady Growth</option>
             <option>Bull Market</option>
             <option>Stagflation</option>
@@ -827,6 +827,13 @@
 
 <!-- Tab switcher defined BEFORE app.js so it works even if app.js errors -->
 <script>
+let _runTimer = null;
+function debouncedRun() {
+  if (!state.result) return; // only auto-rerun if model has been run once
+  clearTimeout(_runTimer);
+  _runTimer = setTimeout(runModel, 800);
+}
+
 function pShowTab(name) {
   // Hide every panel using inline style with !important — beats any CSS rule
   document.querySelectorAll('.ptab-panel').forEach(function(p) {
