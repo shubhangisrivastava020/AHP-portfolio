@@ -584,91 +584,63 @@
 
     <div id="foreEmpty" class="empty"><div class="icon">🔮</div>Select a fund and click a forecast mode above.</div>
 
-    <!-- SCENARIO forecast (existing) -->
+    <!-- SCENARIO forecast -->
     <div id="foreContent" style="display:none">
       <div class="grid-2 section">
         <div class="card">
-          <div class="card-title">Expected Return Distribution (Histogram)</div>
-          <div class="chart-wrap" style="height:300px"><canvas id="foreChart"></canvas></div>
+          <div class="card-title">Expected Portfolio Return 2026–2030</div>
+          <div style="font-size:.75rem;color:var(--muted);margin-bottom:10px">Probability-weighted across 5 macro scenarios</div>
+          <div class="chart-wrap" style="height:260px"><canvas id="foreRetChart"></canvas></div>
         </div>
         <div class="card">
-          <div class="card-title">Expected Portfolio Returns</div>
-          <div class="chart-wrap" style="height:300px"><canvas id="foreRetChart"></canvas></div>
+          <div class="card-title">Scenario Probability Weights</div>
+          <div style="font-size:.75rem;color:var(--muted);margin-bottom:12px">Each scenario's AHP output is probability-weighted to produce the final allocation.</div>
+          <div id="scenarioProbCards"></div>
         </div>
       </div>
       <div class="card section">
-        <div class="card-title">Forecast Allocation Table</div>
+        <div class="card-title">Probability-Weighted Allocation Forecast</div>
+        <div style="font-size:.75rem;color:var(--muted);margin-bottom:10px">% allocation per asset class · bottom row = portfolio expected return</div>
         <div class="table-wrap"><table id="foreTable">
           <thead><tr><th>Asset Class</th><th>2026E</th><th>2027E</th><th>2028E</th><th>2029E</th><th>2030E</th></tr></thead>
           <tbody id="foreBody"></tbody>
         </table></div>
       </div>
-      <div class="card section">
-        <div class="card-title">Historical Returns Attribution</div>
-        <div class="table-wrap"><table>
-          <thead><tr><th>Year</th><th>Scenario</th><th>Actual Return</th><th>Model Return</th><th>Diff</th></tr></thead>
-          <tbody id="attrBody"></tbody>
-        </table></div>
-      </div>
     </div>
 
-    <!-- BOOTSTRAP CI forecast (new) -->
+    <!-- BOOTSTRAP CI forecast -->
     <div id="ciContent" style="display:none">
-      <!-- Methodology badge -->
       <div id="ciMethodBadge" style="margin-bottom:16px;padding:8px 14px;background:rgba(124,58,237,.1);border:1px solid rgba(124,58,237,.3);border-radius:8px;font-size:.78rem;color:var(--muted)"></div>
-
-      <!-- KPI row -->
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px" id="ciKpiRow"></div>
-
-      <!-- Fan charts — one per asset class -->
       <div class="card section">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
-          <div class="card-title" style="margin-bottom:0">Allocation Fan Charts — P10/P25/P50/P75/P90 Bands (2026–2030)</div>
+          <div class="card-title" style="margin-bottom:0">Allocation Fan Charts — P10 / P50 / P90 Bands</div>
           <select class="form-control" id="ciFanAsset" style="width:200px" onchange="renderFanChart()">
             <option value="all">All Assets</option>
           </select>
         </div>
         <div id="ciFanContainer" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px"></div>
       </div>
-
-      <!-- Portfolio return fan chart -->
       <div class="grid-2 section">
         <div class="card">
-          <div class="card-title">Portfolio Return Fan Chart (P10–P90)</div>
+          <div class="card-title">Portfolio Return Fan — P10 / P50 / P90</div>
           <div class="chart-wrap" style="height:300px"><canvas id="ciPortRetChart"></canvas></div>
         </div>
         <div class="card">
-          <div class="card-title">Uncertainty Attribution — Variance Decomposition</div>
-          <div class="chart-wrap" style="height:300px"><canvas id="ciAttrChart"></canvas></div>
+          <div class="card-title">Forecast Uncertainty — Variance Decomposition</div>
+          <div style="font-size:.75rem;color:var(--muted);margin-bottom:8px">What drives forecast uncertainty: macro scenario, AHP judgment, or return variability?</div>
+          <div class="chart-wrap" style="height:260px"><canvas id="ciAttrChart"></canvas></div>
         </div>
       </div>
-
-      <!-- Attribution interpretation -->
       <div class="card section">
         <div class="card-title">Uncertainty Budget Interpretation</div>
         <div id="ciAttrText" style="font-size:.84rem;line-height:1.8;color:var(--text)"></div>
       </div>
-
-      <!-- CI allocation table -->
       <div class="card section">
-        <div class="card-title">Bootstrap Allocation Bands — Median (P50) with Confidence Intervals</div>
+        <div class="card-title">Bootstrap Allocation Bands — P50 Median with P10–P90 Range</div>
         <div class="table-wrap"><table>
-          <thead><tr>
-            <th>Asset Class</th>
-            <th>2026 P50 %</th><th>2026 Band</th>
-            <th>2028 P50 %</th><th>2028 Band</th>
-            <th>2030 P50 %</th><th>2030 Band</th>
-          </tr></thead>
+          <thead><tr><th>Asset Class</th><th>2026 P50</th><th>2026 Range</th><th>2028 P50</th><th>2028 Range</th><th>2030 P50</th><th>2030 Range</th></tr></thead>
           <tbody id="ciBandBody"></tbody>
-        </table></div>
-      </div>
-
-      <!-- Information ratio table -->
-      <div class="card section">
-        <div class="card-title">Forecast Information Ratios (vs Government Bonds benchmark)</div>
-        <div class="table-wrap"><table>
-          <thead><tr><th>Asset Class</th><th>2026 IR</th><th>2027 IR</th><th>2028 IR</th><th>2029 IR</th><th>2030 IR</th></tr></thead>
-          <tbody id="ciIrBody"></tbody>
         </table></div>
       </div>
     </div>
