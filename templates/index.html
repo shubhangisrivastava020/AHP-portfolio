@@ -94,6 +94,62 @@
     .fstat-sub { font-size: .58rem; color: #2d3e5a; margin-top: 1px; }
 
     /* Funded ratio bar */
+    /* ─── 5-Question Intake Wizard ─── */
+    .wizard-wrap {
+      background: rgba(8,14,26,.97); border: 1px solid rgba(201,168,76,.22);
+      border-radius: 14px; overflow: hidden; width: 100%;
+    }
+    .wizard-hdr {
+      background: linear-gradient(135deg,rgba(14,24,48,.95),rgba(10,18,38,.9));
+      padding: 16px 20px; border-bottom: 1px solid rgba(201,168,76,.18);
+      display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+    }
+    .wizard-hdr h3 { font-size: .9rem; font-weight: 800; color: #e2c878; margin: 0 0 3px; }
+    .wizard-hdr p  { font-size: .7rem; color: #475569; margin: 0; line-height: 1.5; }
+    .wiz-prog { text-align: right; flex-shrink: 0; }
+    .wiz-prog-num { font-size: 1.3rem; font-weight: 900; color: var(--lb-gold); line-height: 1; }
+    .wiz-prog-lbl { font-size: .58rem; color: #334155; text-transform: uppercase; letter-spacing: .08em; }
+    .wiz-prog-track { width: 72px; height: 3px; background: rgba(30,41,59,.9); border-radius: 2px; margin-top: 6px; }
+    .wiz-prog-fill  { height: 100%; border-radius: 2px; background: linear-gradient(90deg,var(--lb-gold),#f59e0b); transition: width .35s; }
+    .wiz-q {
+      padding: 13px 20px; border-bottom: 1px solid rgba(12,22,42,.9);
+    }
+    .wiz-q:last-of-type { border-bottom: none; }
+    .wiz-q-hdr { display: flex; align-items: flex-start; gap: 9px; margin-bottom: 9px; }
+    .wiz-q-num {
+      width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .6rem; font-weight: 800; margin-top: 2px;
+      border: 2px solid rgba(51,65,85,.6); color: #475569; transition: all .25s;
+    }
+    .wiz-q.answered .wiz-q-num { border-color: #10b981; color: #fff; background: #10b981; }
+    .wiz-q-title { font-size: .79rem; font-weight: 700; color: #64748b; line-height: 1.3; }
+    .wiz-q.answered .wiz-q-title { color: #e2e8f0; }
+    .wiz-q-sub   { font-size: .64rem; color: #2d3e5a; margin-top: 2px; }
+    .wiz-opts { display: flex; flex-wrap: wrap; gap: 6px; }
+    .wiz-opt {
+      padding: 6px 12px; border-radius: 7px; cursor: pointer;
+      font-size: .72rem; font-weight: 600; font-family: inherit;
+      border: 1px solid rgba(25,37,65,.9); background: rgba(10,18,36,.8);
+      color: #475569; transition: all .15s; display: flex; align-items: center; gap: 5px;
+    }
+    .wiz-opt:hover  { border-color: rgba(201,168,76,.35); color: #94a3b8; }
+    .wiz-opt.selected { background: rgba(201,168,76,.12); border-color: var(--lb-gold-border); color: #e2c878; font-weight: 700; }
+    .wizard-footer {
+      padding: 13px 20px; background: rgba(6,11,20,.9);
+      border-top: 1px solid rgba(20,32,58,.9);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .wiz-count { font-size: .68rem; color: #2d3e5a; font-weight: 600; }
+    .wiz-gen-btn {
+      background: linear-gradient(135deg,#b8860b,#c9a84c); border: none;
+      border-radius: 8px; color: #080e1a; font-size: .78rem; font-weight: 800;
+      padding: 8px 20px; cursor: pointer; font-family: inherit; letter-spacing: .03em;
+      opacity: .3; pointer-events: none; transition: opacity .25s, filter .15s, transform .1s;
+    }
+    .wiz-gen-btn.ready { opacity: 1; pointer-events: all; }
+    .wiz-gen-btn.ready:hover { filter: brightness(1.1); transform: translateY(-1px); }
+
     .fr-bar { margin-top: 12px; }
     .fr-bar-row { display: flex; justify-content: space-between; font-size: .62rem; color: #334155; font-weight: 600; margin-bottom: 4px; }
     .fr-track { height: 6px; background: rgba(20,34,60,.9); border-radius: 3px; }
@@ -496,20 +552,105 @@
 
     <!-- Messages -->
     <div class="msgs" id="chatArea">
-      <div class="msg-ai">
-        <div class="av-ai">AI</div>
-        <div>
-          <div class="bubble-ai">
-            Welcome to <strong>Liberty Bell Pension Fund's AI Allocation Platform</strong>. I'm your institutional AI advisor — I turn your AHP model output into defensible allocation decisions with the reasoning your Investment Committee, trustees, and regulators need.<br><br>
-            <strong>What I do that no other tool does:</strong><br>
-            — Explain <em>why</em> the AHP recommends each weight in language trustees can read<br>
-            — Generate <em>Investment Committee narrative</em> paragraphs ready to paste into board memos<br>
-            — Stress-test your <em>funded ratio</em> under Stagflation, Deflation, and Bull Market scenarios<br>
-            — Benchmark against <em>CalPERS, APG, OTPP, CDPQ</em> and flag meaningful divergences<br>
-            — Audit every <em>pairwise matrix</em> and identify the exact comparison driving any CR violation<br><br>
-            <strong>Start here:</strong> Click <em>▶ Run Model</em> in the top-right to load Liberty Bell's AHP allocation. Then ask me anything or use a quick action above.
+      <!-- 5-Question Intake Wizard -->
+      <div id="wizardCard" class="wizard-wrap">
+
+        <div class="wizard-hdr">
+          <div>
+            <h3>Get Your Allocation in 60 Seconds</h3>
+            <p>5 real questions. No jargon. The AI maps your answers to the AHP model and generates a board-ready allocation — instantly.</p>
           </div>
-          <div class="msg-meta">AI Advisor · Liberty Bell Pension Fund · Steady Growth scenario</div>
+          <div class="wiz-prog">
+            <div class="wiz-prog-num" id="wizProgNum">0</div>
+            <div class="wiz-prog-lbl">of 5</div>
+            <div class="wiz-prog-track"><div class="wiz-prog-fill" id="wizProgFill" style="width:0%"></div></div>
+          </div>
+        </div>
+
+        <!-- Q1: Horizon -->
+        <div class="wiz-q" id="wq1">
+          <div class="wiz-q-hdr">
+            <div class="wiz-q-num">1</div>
+            <div>
+              <div class="wiz-q-title">What's your investment horizon?</div>
+              <div class="wiz-q-sub">This drives whether we prioritize total return vs liability matching vs capital preservation.</div>
+            </div>
+          </div>
+          <div class="wiz-opts">
+            <button class="wiz-opt" onclick="wizPick(1,'long','Long-term (15+ yrs)',this)"><span>🏛</span>Long-term — 15+ years, liability matching</button>
+            <button class="wiz-opt" onclick="wizPick(1,'medium','Medium-term (5–15 yrs)',this)"><span>⚖️</span>Medium-term — 5–15 years, growth + stability</button>
+            <button class="wiz-opt" onclick="wizPick(1,'short','Near-term (under 5 yrs)',this)"><span>⏱</span>Near-term — benefit payments due soon</button>
+          </div>
+        </div>
+
+        <!-- Q2: Funded Status -->
+        <div class="wiz-q" id="wq2">
+          <div class="wiz-q-hdr">
+            <div class="wiz-q-num">2</div>
+            <div>
+              <div class="wiz-q-title">Where does your fund stand right now?</div>
+              <div class="wiz-q-sub">Funded status determines your risk budget. Underfunded means deficit-repair comes first.</div>
+            </div>
+          </div>
+          <div class="wiz-opts">
+            <button class="wiz-opt" onclick="wizPick(2,'over','Above 100% — room to take risk',this)"><span>🟢</span>Above 100% — well-funded, can take risk</button>
+            <button class="wiz-opt" onclick="wizPick(2,'ok','85–100% — measured risk',this)"><span>🟡</span>85–100% — near target, measured risk</button>
+            <button class="wiz-opt" onclick="wizPick(2,'under','Below 85% — deficit repair mode',this)"><span>🔴</span>Below 85% — underfunded, liability-first</button>
+          </div>
+        </div>
+
+        <!-- Q3: Macro View -->
+        <div class="wiz-q" id="wq3">
+          <div class="wiz-q-hdr">
+            <div class="wiz-q-num">3</div>
+            <div>
+              <div class="wiz-q-title">What's your macro call for the next 12–24 months?</div>
+              <div class="wiz-q-sub">The AHP scenario drives which asset classes get higher weights. Be honest — this is where most allocators hedge and regret it.</div>
+            </div>
+          </div>
+          <div class="wiz-opts">
+            <button class="wiz-opt" onclick="wizPick(3,'bull','Fed cuts — soft landing',this)"><span>📈</span>Fed cuts, soft landing — tilt equities</button>
+            <button class="wiz-opt" onclick="wizPick(3,'steady','Higher-for-longer, no recession',this)"><span>📊</span>Higher-for-longer — balanced, watch duration</button>
+            <button class="wiz-opt" onclick="wizPick(3,'stag','Stagflation — inflation stays elevated',this)"><span>🌡</span>Stagflation risk — real assets, commodities</button>
+            <button class="wiz-opt" onclick="wizPick(3,'def','Recession / deflation coming',this)"><span>📉</span>Recession/deflation — bonds, defensive</button>
+          </div>
+        </div>
+
+        <!-- Q4: Drawdown Tolerance -->
+        <div class="wiz-q" id="wq4">
+          <div class="wiz-q-hdr">
+            <div class="wiz-q-num">4</div>
+            <div>
+              <div class="wiz-q-title">If markets drop 25% tomorrow — what happens?</div>
+              <div class="wiz-q-sub">The S&P fell 34% in 2020, 18% in 2022. Your real answer here — not the policy answer — determines your actual equity tolerance.</div>
+            </div>
+          </div>
+          <div class="wiz-opts">
+            <button class="wiz-opt" onclick="wizPick(4,'high','Stay the course — we\'re long-term',this)"><span>💪</span>We stay the course — long horizon absorbs it</button>
+            <button class="wiz-opt" onclick="wizPick(4,'mid','We can absorb up to 15% drawdown',this)"><span>⚖️</span>Partial — we can absorb ~15% max drawdown</button>
+            <button class="wiz-opt" onclick="wizPick(4,'low','We\'d face pressure to de-risk or sell',this)"><span>🛡</span>Low tolerance — liquidity pressure if markets fall</button>
+          </div>
+        </div>
+
+        <!-- Q5: Alternatives Access -->
+        <div class="wiz-q" id="wq5">
+          <div class="wiz-q-hdr">
+            <div class="wiz-q-num">5</div>
+            <div>
+              <div class="wiz-q-title">What does your IPS allow in alternatives?</div>
+              <div class="wiz-q-sub">Real estate, commodities, and private credit change the AHP allocation significantly. What's actually permitted — not what you wish were permitted.</div>
+            </div>
+          </div>
+          <div class="wiz-opts">
+            <button class="wiz-opt" onclick="wizPick(5,'full','Full alternatives — RE, commodities, privates',this)"><span>✅</span>Full access — real estate, commodities, alternatives</button>
+            <button class="wiz-opt" onclick="wizPick(5,'partial','Public markets + listed REITs only',this)"><span>🔶</span>Partial — public REITs and commodity ETFs only</button>
+            <button class="wiz-opt" onclick="wizPick(5,'none','Public markets only — no alternatives',this)"><span>❌</span>None — public equities and bonds only</button>
+          </div>
+        </div>
+
+        <div class="wizard-footer">
+          <span class="wiz-count" id="wizCount">Answer all 5 to generate your allocation</span>
+          <button class="wiz-gen-btn" id="wizGenBtn" onclick="runWizard()">Generate My Allocation →</button>
         </div>
       </div>
     </div>
@@ -845,15 +986,167 @@ function showToast(msg, type) {
   setTimeout(() => t.className = '', 3500);
 }
 
-// stub for app.js compatibility
-function runModel() { runAndRender(); }
-function resetAdvisor() {}
-function sendChat()  { sendMsg(); }
+// stubs for app.js compatibility
+function runModel()          { runAndRender(); }
+function resetAdvisor()      {}
+function sendChat()          { sendMsg(); }
 function sendChallengeBtn()  { setMode('CHALLENGE', document.getElementById('pill-CHALLENGE')); quickAsk('Challenge the single most questionable allocation in the current Liberty Bell AHP output. Use empirical data and historical precedent.'); }
 function sendCompetitorBtn() { askBenchmark('CalPERS'); }
 
-// Auto-run on page load
-window.addEventListener('DOMContentLoaded', () => runAndRender());
+/* ═══════════════════════════════════════════════════
+   5-QUESTION INTAKE WIZARD
+   ═══════════════════════════════════════════════════ */
+const wizAnswers = {}; // { 1: 'long', 2: 'ok', 3: 'steady', 4: 'mid', 5: 'full' }
+
+// Mapping answers → model parameters
+const WIZARD_MAP = {
+  // Q1 horizon → scenario bias (overridden by Q3) & funded_ratio adjustment
+  horizon: {
+    long:   { hint: 'long-term liability matching' },
+    medium: { hint: 'medium-term balanced mandate' },
+    short:  { hint: 'near-term capital preservation' },
+  },
+  // Q2 funded status → funded_ratio
+  funded: {
+    over:  { ratio: 110, hint: 'well-funded (>100%)' },
+    ok:    { ratio: 87,  hint: 'adequately funded (85–100%)' },
+    under: { ratio: 75,  hint: 'underfunded (<85%)' },
+  },
+  // Q3 macro → scenario
+  macro: {
+    bull:   { scenario: 'Bull Market',    hint: 'Fed cutting rates — soft landing' },
+    steady: { scenario: 'Steady Growth',  hint: 'higher-for-longer, no recession' },
+    stag:   { scenario: 'Stagflation',    hint: 'stagflation — real assets favoured' },
+    def:    { scenario: 'Deflation',      hint: 'recession / deflation risk' },
+  },
+  // Q4 drawdown → AUM modifier (for briefing context only)
+  drawdown: {
+    high: { label: 'high equity tolerance',  hint: 'can absorb 25%+ drawdown' },
+    mid:  { label: 'moderate risk tolerance', hint: 'max ~15% drawdown acceptable' },
+    low:  { label: 'capital preservation',    hint: 'low drawdown tolerance — defensive posture' },
+  },
+  // Q5 alts access → IPS alt label
+  alts: {
+    full:    { label: 'full alternatives access',         hint: 'real estate, commodities, privates all allowed' },
+    partial: { label: 'public markets + listed REITs',    hint: 'public REITs and commodity ETFs only' },
+    none:    { label: 'public markets only',               hint: 'no alternatives — equities and bonds only' },
+  },
+};
+
+function wizPick(qNum, val, label, btn) {
+  // Deselect other buttons in this question
+  btn.closest('.wiz-opts').querySelectorAll('.wiz-opt').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+
+  wizAnswers[qNum] = val;
+
+  // Mark question as answered
+  const qEl = document.getElementById('wq' + qNum);
+  if (qEl) qEl.classList.add('answered');
+
+  // Update progress
+  const answered = Object.keys(wizAnswers).length;
+  const progNum  = document.getElementById('wizProgNum');
+  const progFill = document.getElementById('wizProgFill');
+  const countEl  = document.getElementById('wizCount');
+  const genBtn   = document.getElementById('wizGenBtn');
+
+  if (progNum)  progNum.textContent       = answered;
+  if (progFill) progFill.style.width      = (answered / 5 * 100) + '%';
+
+  if (answered === 5) {
+    if (countEl) countEl.textContent = 'All set — generate your allocation now';
+    if (genBtn)  genBtn.classList.add('ready');
+  } else {
+    if (countEl) countEl.textContent = `${answered} of 5 answered`;
+    if (genBtn)  genBtn.classList.remove('ready');
+  }
+
+  // Live-update dashboard params as user picks
+  if (qNum === 2) {
+    const ratio = WIZARD_MAP.funded[val]?.ratio || 87;
+    const pf = document.getElementById('pFunded');
+    if (pf) { pf.value = ratio; document.getElementById('cfgFunded').value = ratio; }
+    document.getElementById('dbFunded').textContent = ratio + '%';
+    document.getElementById('dbFundedBar').style.width = Math.min(ratio, 100) + '%';
+  }
+  if (qNum === 3) {
+    const sc = WIZARD_MAP.macro[val]?.scenario || 'Steady Growth';
+    const ps = document.getElementById('pScenario');
+    if (ps) { ps.value = sc; document.getElementById('cfgScenario').value = sc; }
+    document.getElementById('ctxScenario') && (document.getElementById('ctxScenario').textContent = sc);
+  }
+}
+
+async function runWizard() {
+  if (Object.keys(wizAnswers).length < 5) return;
+
+  // Collapse wizard with a loading state
+  const genBtn = document.getElementById('wizGenBtn');
+  if (genBtn) { genBtn.textContent = '◌ Running model…'; genBtn.disabled = true; }
+
+  // Apply all wizard settings to model params
+  const fundedRatio = WIZARD_MAP.funded[wizAnswers[2]]?.ratio || 87;
+  const scenario    = WIZARD_MAP.macro[wizAnswers[3]]?.scenario || 'Steady Growth';
+  const aum         = parseFloat(document.getElementById('pAum')?.value || 3.2);
+
+  document.getElementById('pFunded').value   = fundedRatio;
+  document.getElementById('pScenario').value = scenario;
+  document.getElementById('cfgFunded').value = fundedRatio;
+  document.getElementById('cfgScenario').value = scenario;
+
+  // Run AHP model
+  await runAndRender();
+
+  // Remove wizard card
+  const card = document.getElementById('wizardCard');
+  if (card) {
+    card.style.transition = 'opacity .4s';
+    card.style.opacity = '0';
+    setTimeout(() => card.remove(), 400);
+  }
+
+  // Build a rich briefing prompt from wizard answers
+  const h   = wizAnswers[1];
+  const f   = wizAnswers[2];
+  const m   = wizAnswers[3];
+  const d   = wizAnswers[4];
+  const alt = wizAnswers[5];
+
+  const horizonHint   = WIZARD_MAP.horizon[h]?.hint    || h;
+  const fundedHint    = WIZARD_MAP.funded[f]?.hint     || f;
+  const macroHint     = WIZARD_MAP.macro[m]?.hint      || m;
+  const drawdownHint  = WIZARD_MAP.drawdown[d]?.hint   || d;
+  const altsHint      = WIZARD_MAP.alts[alt]?.hint     || alt;
+
+  const briefingPrompt = `I've just configured the Liberty Bell AHP model with my fund profile:
+• Investment horizon: ${horizonHint}
+• Funded status: ${fundedHint} (funded ratio: ${fundedRatio}%)
+• Macro view: ${macroHint} — scenario set to "${scenario}"
+• Drawdown tolerance: ${drawdownHint}
+• Alternatives access: ${altsHint}
+
+Based on these inputs and the live AHP allocation that just ran, give me:
+1. My full allocation in dollars ($B) for each asset class — and flag anything that concerns you given my profile
+2. The single biggest risk in my current allocation given my funded status and macro view
+3. One specific rebalancing move I should seriously consider`;
+
+  // Small delay so wizard fade-out finishes, then auto-send
+  setTimeout(() => {
+    document.getElementById('chatInput').value = briefingPrompt;
+    sendMsg();
+  }, 500);
+}
+
+// Don't auto-run on load — wizard handles first run
+window.addEventListener('DOMContentLoaded', () => {
+  // just sync param display
+  const pf = document.getElementById('pFunded');
+  if (pf) {
+    document.getElementById('dbFunded').textContent = pf.value + '%';
+    document.getElementById('dbFundedBar').style.width = Math.min(parseInt(pf.value), 100) + '%';
+  }
+});
 </script>
 </body>
 </html>
