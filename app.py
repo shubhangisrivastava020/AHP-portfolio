@@ -449,7 +449,7 @@ def chat():
     """Proxy to Claude adversarial / advisor chatbot."""
     data       = request.json or {}
     # Prefer client-supplied key; fall back to server env key
-    api_key    = data.get('api_key', '').strip() or _SERVER_API_KEY
+    api_key    = data.get('api_key', '').strip() or os.environ.get('ANTHROPIC_API_KEY', '') or _SERVER_API_KEY
     message    = data.get('message', '')
     mode       = data.get('mode', 'CHALLENGE')
     history    = data.get('history', [])
