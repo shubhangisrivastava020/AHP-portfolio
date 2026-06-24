@@ -3,7 +3,8 @@ AI-AHP Pension Fund Portfolio Allocation System
 Flask Web Application Backend
 """
 
-import sys, os, json
+import sys, os, json, time
+from collections import defaultdict
 sys.path.insert(0, os.path.dirname(__file__))
 
 from flask import Flask, render_template, jsonify, request, redirect
@@ -22,6 +23,28 @@ from evidence_engine import (
 
 app = Flask(__name__)
 app.config['TEMPLATES_AUTO_RELOAD'] = True
+
+# ── Server-side API key (set ANTHROPIC_API_KEY in Railway env vars) ──
+_SERVER_API_KEY = os.environ.get('ANTHROPIC_API_KEY', '')
+
+# ── Simple in-memory rate limiter ────────────────────────────────────
+# Each IP gets RATE_LIMIT_MAX messages per RATE_LIMIT_WINDOW seconds.
+RATE_LIMIT_MAX    = 20          # messages per window
+RATE_LIMIT_WINDOW = 3600        # 1 hour
+
+_rate_store: dict = defaultdict(lambda: {'count': 0, 'reset': 0})
+
+def _check_rate(ip: str) -> tuple[bool, int, int]:
+    """Returns (allowed, used, remaining)."""
+    now  = time.time()
+    data = _rate_store[ip]
+    if now > data['reset']:
+        data['count'] = 0
+        data['reset'] = now + RATE_LIMIT_WINDOW
+    if data['count'] >= RATE_LIMIT_MAX:
+        return False, data['count'], 0
+    data['count'] += 1
+    return True, data['count'], RATE_LIMIT_MAX - data['count']
 
 # ─────────────────────────────────────────────────────────────
 # ROUTES
@@ -408,16 +431,31 @@ def sensitivity():
 def chat():
     """Proxy to Claude adversarial / advisor chatbot."""
     data       = request.json or {}
-    api_key    = data.get('api_key', '')
+    # Prefer client-supplied key; fall back to server env key
+    api_key    = data.get('api_key', '').strip() or _SERVER_API_KEY
     message    = data.get('message', '')
     mode       = data.get('mode', 'CHALLENGE')
     history    = data.get('history', [])
-    model_ctx  = data.get('model_context', {})   # AHP results injected from frontend
+    model_ctx  = data.get('model_context', {})
 
     if not api_key:
-        return jsonify({'error': 'API key required'}), 400
+        return jsonify({'error': 'No API key configured. Please contact the site administrator.'}), 503
     if not message:
         return jsonify({'error': 'Message required'}), 400
+
+    # Rate-limit only when using the server key (users with their own key bypass)
+    using_server_key = not data.get('api_key', '').strip()
+    if using_server_key:
+        ip = request.headers.get('X-Forwarded-For', request.remote_addr or '').split(',')[0].strip()
+        allowed, used, remaining = _check_rate(ip)
+        if not allowed:
+            return jsonify({
+                'error': f'Session limit reached ({RATE_LIMIT_MAX} messages per hour). '
+                         'Enter your own Anthropic API key below to continue unlimited.',
+                'rate_limited': True,
+                'used': used,
+                'limit': RATE_LIMIT_MAX,
+            }), 429
 
     try:
         from chatbot_agent import AHPChallengerBot
@@ -476,7 +514,12 @@ def chat():
                 message = context_block + message
 
         reply = bot.ask_question(message)
-        return jsonify({'reply': reply, 'history': bot.conversation_history})
+        resp_data = {'reply': reply, 'history': bot.conversation_history}
+        if using_server_key:
+            resp_data['used']      = used
+            resp_data['remaining'] = remaining
+            resp_data['limit']     = RATE_LIMIT_MAX
+        return jsonify(resp_data)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 

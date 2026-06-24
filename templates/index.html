@@ -81,6 +81,61 @@
     }
     .lb-new-btn:hover { background: rgba(201,168,76,.2); }
 
+    /* Usage meter */
+    .lb-usage-bar {
+      display: flex; align-items: center; gap: 8px;
+      background: rgba(15,23,42,.7); border: 1px solid rgba(30,41,59,.9);
+      border-radius: 7px; padding: 4px 12px;
+    }
+    .lb-usage-label { font-size: .67rem; color: #334155; font-weight: 600; }
+    .lb-usage-track {
+      width: 70px; height: 5px; background: rgba(30,41,59,.9);
+      border-radius: 3px; overflow: hidden;
+    }
+    .lb-usage-fill {
+      height: 100%; border-radius: 3px;
+      background: linear-gradient(90deg, #10b981, #3b82f6);
+      transition: width .4s ease;
+    }
+    .lb-usage-num { font-size: .67rem; color: #475569; font-weight: 700; }
+
+    /* Own-key panel */
+    .lb-own-key {
+      border-top: 1px solid rgba(30,41,59,.8);
+      padding: 8px 24px;
+      background: rgba(8,14,26,.85);
+      display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+      flex-wrap: wrap;
+    }
+    .lb-own-key-toggle {
+      font-size: .7rem; color: #334155; cursor: pointer; font-weight: 600;
+      background: none; border: none; font-family: inherit; padding: 0;
+      transition: color .15s; text-decoration: underline dotted;
+    }
+    .lb-own-key-toggle:hover { color: var(--lb-gold); }
+    .lb-own-key-wrap {
+      display: none; align-items: center; gap: 8px; flex: 1;
+    }
+    .lb-own-key-wrap.open { display: flex; }
+    .lb-own-key-input {
+      flex: 1; background: rgba(15,23,42,.8); border: 1px solid rgba(30,41,59,.9);
+      border-radius: 7px; color: #cbd5e1; font-size: .78rem; font-family: inherit;
+      padding: 5px 12px; outline: none; transition: border-color .15s;
+    }
+    .lb-own-key-input:focus { border-color: var(--lb-gold-border); }
+    .lb-own-key-input::placeholder { color: #1e293b; }
+    .lb-own-key-save {
+      background: var(--lb-gold-dim); border: 1px solid var(--lb-gold-border);
+      color: var(--lb-gold); font-size: .72rem; font-weight: 700;
+      padding: 5px 12px; border-radius: 6px; cursor: pointer;
+      font-family: inherit; white-space: nowrap;
+    }
+    .lb-rate-banner {
+      padding: 10px 24px; background: rgba(239,68,68,.08);
+      border-bottom: 1px solid rgba(239,68,68,.2);
+      font-size: .78rem; color: #fca5a5; display: none;
+    }
+
     /* ── LAYOUT ── */
     .lb-body { display: flex; flex: 1; overflow: hidden; }
 
@@ -418,20 +473,25 @@
     <div class="lb-hbadge session">● Live GP Review</div>
   </div>
   <div class="lb-header-right">
-    <div class="lb-api-wrap">
-      <span style="font-size:.7rem;color:#334155">🔑</span>
-      <input type="password" id="apiKey" placeholder="Anthropic API key">
+    <!-- Session usage meter -->
+    <div class="lb-usage-bar" id="usageMeter" title="Messages used this session">
+      <span class="lb-usage-label">Session</span>
+      <div class="lb-usage-track">
+        <div class="lb-usage-fill" id="usageFill" style="width:0%"></div>
+      </div>
+      <span class="lb-usage-num" id="usageNum">0 / 20</span>
     </div>
     <button class="lb-new-btn" onclick="clearDiligence()">↺ New Session</button>
   </div>
 </div>
 
-<!-- hidden stubs for app.js compatibility -->
+<!-- hidden stubs -->
 <input type="hidden" id="chatMode" value="DILIGENCE">
 <input type="hidden" id="cfgFund" value="Liberty Bell Pension Fund">
 <input type="hidden" id="cfgAum" value="3.2">
 <input type="hidden" id="cfgScenario" value="Steady Growth">
 <input type="hidden" id="cfgFunded" value="87">
+<input type="hidden" id="apiKey" value="">
 <div id="modeDesc" style="display:none"></div>
 <div id="chatContextStatus" style="display:none"></div>
 <button id="runBtn" style="display:none" onclick="runModel()"></button>
@@ -596,6 +656,11 @@
       <span style="margin-left:auto;font-size:.66rem;color:#1e293b" id="ctxGrade"></span>
     </div>
 
+    <!-- Rate limit banner (hidden until triggered) -->
+    <div class="lb-rate-banner" id="rateBanner">
+      ⚠ You've used all 20 free messages for this hour. Enter your own Anthropic API key below for unlimited access — or come back in an hour.
+    </div>
+
     <!-- Messages -->
     <div class="lb-msgs" id="chatArea">
 
@@ -640,6 +705,16 @@
       </div>
     </div>
 
+    <!-- Own-key escape hatch -->
+    <div class="lb-own-key">
+      <button class="lb-own-key-toggle" onclick="toggleOwnKey()">🔑 Use your own Anthropic API key for unlimited access</button>
+      <div class="lb-own-key-wrap" id="ownKeyWrap">
+        <input class="lb-own-key-input" type="password" id="ownKeyInput" placeholder="sk-ant-…">
+        <button class="lb-own-key-save" onclick="saveOwnKey()">Activate →</button>
+        <span style="font-size:.68rem;color:#334155">Bypass rate limits · Your key is never stored server-side</span>
+      </div>
+    </div>
+
   </div><!-- /chat pane -->
 
 </div><!-- /body -->
@@ -652,8 +727,10 @@
 /* ─── Liberty Bell GP Due Diligence Engine ─── */
 
 let diStage    = 1;
-let lbResult   = null; // AHP model result
+let lbResult   = null;
 let lbScenario = 'Steady Growth';
+let msgUsed    = 0;
+const MSG_LIMIT = 20;
 
 // Asset display colours
 const ASSET_COLORS = {
@@ -747,13 +824,46 @@ function renderAllocBars(weights) {
   }).join('');
 }
 
+/* ── Usage meter ── */
+function updateUsageMeter(used, limit) {
+  msgUsed = used;
+  const fill = document.getElementById('usageFill');
+  const num  = document.getElementById('usageNum');
+  if (fill) fill.style.width = Math.min((used / limit) * 100, 100) + '%';
+  if (fill) fill.style.background = used >= limit * 0.8
+    ? 'linear-gradient(90deg,#f59e0b,#ef4444)'
+    : 'linear-gradient(90deg,#10b981,#3b82f6)';
+  if (num)  num.textContent = `${used} / ${limit}`;
+}
+
+/* ── Own-key panel ── */
+function toggleOwnKey() {
+  const wrap = document.getElementById('ownKeyWrap');
+  wrap.classList.toggle('open');
+  if (wrap.classList.contains('open')) document.getElementById('ownKeyInput')?.focus();
+}
+
+function saveOwnKey() {
+  const val = document.getElementById('ownKeyInput')?.value.trim();
+  if (!val || !val.startsWith('sk-ant-')) {
+    showToast('Enter a valid Anthropic API key (starts with sk-ant-)', 'error'); return;
+  }
+  document.getElementById('apiKey').value = val;
+  document.getElementById('ownKeyWrap').classList.remove('open');
+  document.getElementById('rateBanner').style.display = 'none';
+  // Reset meter display to show unlimited
+  const num  = document.getElementById('usageNum');
+  const fill = document.getElementById('usageFill');
+  if (num)  num.textContent = '∞';
+  if (fill) fill.style.width = '0%';
+  showToast('Your API key activated — unlimited messages', 'success');
+}
+
 /* ── Send message ── */
 async function sendDiligence() {
-  const input     = document.getElementById('chatInput');
-  const apiKeyEl  = document.getElementById('apiKey');
-  const msg       = input?.value.trim();
+  const input  = document.getElementById('chatInput');
+  const msg    = input?.value.trim();
   if (!msg) return;
-  if (!apiKeyEl?.value.trim()) { showToast('Enter your Anthropic API key first', 'error'); return; }
 
   const area = document.getElementById('chatArea');
 
@@ -784,13 +894,28 @@ async function sendDiligence() {
       dollar_allocation: lbResult.dollar_allocation,
     } : {};
 
+    const ownKey = document.getElementById('apiKey')?.value.trim() || '';
     const resp = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: msg, mode: 'DILIGENCE', api_key: apiKeyEl.value.trim(), model_context: ctx }),
+      body: JSON.stringify({ message: msg, mode: 'DILIGENCE', api_key: ownKey, model_context: ctx }),
     });
     const data = await resp.json();
+
+    // Handle rate limit
+    if (resp.status === 429 || data.rate_limited) {
+      document.getElementById('lb-typing')?.remove();
+      document.getElementById('rateBanner').style.display = 'block';
+      document.getElementById('ownKeyWrap').classList.add('open');
+      document.getElementById('ownKeyInput')?.focus();
+      updateUsageMeter(data.used || MSG_LIMIT, data.limit || MSG_LIMIT);
+      if (btn) btn.disabled = false;
+      return;
+    }
     if (data.error) throw new Error(data.error);
+
+    // Update usage meter if server returned counts
+    if (data.used !== undefined) updateUsageMeter(data.used, data.limit || MSG_LIMIT);
 
     const text = data.reply || '';
     detectStageAdvance(text);
