@@ -3,436 +3,641 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GP Due Diligence — Institutional Capital Allocator</title>
+  <title>Liberty Bell Pension Fund — GP Due Diligence</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/css/style.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
-    /* ── Page-level overrides for full-screen interview UI ── */
-    body { background: var(--bg); overflow: hidden; }
-    #app { display: flex; flex-direction: column; height: 100vh; }
+    :root {
+      --lb-gold: #c9a84c;
+      --lb-gold-dim: rgba(201,168,76,.15);
+      --lb-gold-border: rgba(201,168,76,.3);
+      --lb-navy: #0b1628;
+      --lb-navy2: #0f1e35;
+      --lb-blue: #1a3a6b;
+    }
 
-    /* Slim interview header */
-    .di-header {
+    body { background: var(--lb-navy); overflow: hidden; font-family: 'Inter', sans-serif; }
+    #app  { display: flex; flex-direction: column; height: 100vh; }
+
+    /* ── HEADER ── */
+    .lb-header {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 12px 28px;
-      border-bottom: 1px solid var(--border);
-      background: rgba(8, 11, 20, 0.9);
-      backdrop-filter: blur(10px);
-      flex-shrink: 0;
-      z-index: 100;
+      padding: 0 28px; height: 60px;
+      background: rgba(8, 14, 30, 0.97);
+      border-bottom: 1px solid rgba(201,168,76,.2);
+      flex-shrink: 0; z-index: 100;
     }
-    .di-header-left { display: flex; align-items: center; gap: 14px; }
-    .di-org-badge {
-      font-size: .68rem; font-weight: 700; letter-spacing: .1em;
-      text-transform: uppercase; color: #94a3b8;
-      border: 1px solid rgba(148,163,184,.25);
-      padding: 3px 10px; border-radius: 4px;
+    .lb-brand {
+      display: flex; align-items: center; gap: 12px;
     }
-    .di-session-badge {
-      font-size: .68rem; font-weight: 600;
-      background: rgba(239,68,68,.12); border: 1px solid rgba(239,68,68,.25);
-      color: #f87171; padding: 3px 10px; border-radius: 4px;
-      letter-spacing: .05em;
+    .lb-bell-icon {
+      width: 38px; height: 38px; flex-shrink: 0;
     }
-    .di-header-right { display: flex; align-items: center; gap: 10px; }
-    .di-api-wrap {
+    .lb-name {
+      display: flex; flex-direction: column; line-height: 1.1;
+    }
+    .lb-name-main {
+      font-size: .92rem; font-weight: 800; letter-spacing: .04em;
+      color: #e2c878;
+      text-transform: uppercase;
+    }
+    .lb-name-sub {
+      font-size: .63rem; font-weight: 500; color: #475569;
+      letter-spacing: .06em; text-transform: uppercase; margin-top: 1px;
+    }
+    .lb-header-mid {
+      display: flex; align-items: center; gap: 8px;
+    }
+    .lb-hbadge {
+      font-size: .62rem; font-weight: 700; letter-spacing: .08em;
+      text-transform: uppercase; padding: 3px 10px; border-radius: 4px;
+    }
+    .lb-hbadge.session {
+      background: rgba(239,68,68,.1); border: 1px solid rgba(239,68,68,.2);
+      color: #f87171;
+    }
+    .lb-hbadge.desk {
+      background: var(--lb-gold-dim); border: 1px solid var(--lb-gold-border);
+      color: var(--lb-gold);
+    }
+    .lb-header-right { display: flex; align-items: center; gap: 10px; }
+    .lb-api-wrap {
       display: flex; align-items: center; gap: 6px;
-      background: rgba(15,23,42,.7); border: 1px solid var(--border);
-      border-radius: 7px; padding: 5px 10px;
+      background: rgba(15,23,42,.7); border: 1px solid rgba(30,41,59,.9);
+      border-radius: 7px; padding: 5px 12px;
     }
-    .di-api-wrap input {
+    .lb-api-wrap input {
       background: none; border: none; outline: none;
-      color: var(--text); font-size: .78rem; font-family: var(--font);
-      width: 210px;
+      color: #e2e8f0; font-size: .78rem; font-family: inherit;
+      width: 200px;
     }
-    .di-api-wrap input::placeholder { color: var(--muted); }
-    .di-clear-btn {
-      background: rgba(99,102,241,.1); border: 1px solid rgba(99,102,241,.3);
-      color: #818cf8; font-size: .72rem; padding: 4px 12px;
-      border-radius: 6px; cursor: pointer; font-family: var(--font);
-      transition: background .15s;
+    .lb-api-wrap input::placeholder { color: #334155; }
+    .lb-new-btn {
+      background: rgba(201,168,76,.1); border: 1px solid var(--lb-gold-border);
+      color: var(--lb-gold); font-size: .72rem; font-weight: 600;
+      padding: 5px 14px; border-radius: 6px; cursor: pointer;
+      font-family: inherit; transition: background .15s;
     }
-    .di-clear-btn:hover { background: rgba(99,102,241,.2); }
+    .lb-new-btn:hover { background: rgba(201,168,76,.2); }
 
-    /* Main layout */
-    .di-body { display: flex; flex: 1; overflow: hidden; }
+    /* ── LAYOUT ── */
+    .lb-body { display: flex; flex: 1; overflow: hidden; }
 
-    /* Left sidebar */
-    .di-sidebar {
-      width: 280px; flex-shrink: 0;
-      border-right: 1px solid var(--border);
+    /* ── SIDEBAR ── */
+    .lb-sidebar {
+      width: 290px; flex-shrink: 0;
+      border-right: 1px solid rgba(30,41,59,.9);
       display: flex; flex-direction: column;
-      background: rgba(8,11,20,.6);
+      background: rgba(8,14,26,.7);
       overflow-y: auto;
     }
-
-    .di-sidebar-section {
-      padding: 18px 16px;
+    .lb-sb-sec {
+      padding: 16px;
       border-bottom: 1px solid rgba(30,41,59,.8);
     }
-    .di-sidebar-label {
-      font-size: .62rem; font-weight: 700; letter-spacing: .1em;
-      text-transform: uppercase; color: #475569; margin-bottom: 12px;
+    .lb-sb-title {
+      font-size: .6rem; font-weight: 800; letter-spacing: .12em;
+      text-transform: uppercase; color: #334155; margin-bottom: 10px;
     }
+
+    /* Fund profile */
+    .lb-fund-card {
+      background: linear-gradient(145deg, rgba(11,22,40,.9), rgba(15,30,53,.7));
+      border: 1px solid rgba(201,168,76,.2); border-radius: 10px;
+      padding: 14px 16px;
+    }
+    .lb-fund-name {
+      font-size: .85rem; font-weight: 800; color: #e2c878;
+      letter-spacing: .01em; margin-bottom: 2px;
+    }
+    .lb-fund-loc {
+      font-size: .67rem; color: #475569; margin-bottom: 12px;
+      font-weight: 500;
+    }
+    .lb-fund-stats {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+    }
+    .lb-stat {
+      background: rgba(15,23,42,.6); border-radius: 7px;
+      padding: 8px 10px; border: 1px solid rgba(30,41,59,.8);
+    }
+    .lb-stat-label { font-size: .6rem; color: #334155; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; margin-bottom: 4px; }
+    .lb-stat-val   { font-size: 1.05rem; font-weight: 800; color: #e2e8f0; }
+    .lb-stat-sub   { font-size: .62rem; color: #475569; margin-top: 1px; }
+    .lb-stat-val.amber { color: var(--lb-gold); }
+    .lb-stat-val.warn  { color: #f59e0b; }
+    .lb-stat-val.green { color: #10b981; }
+
+    /* Funded ratio bar */
+    .lb-fr-bar-wrap { margin-top: 12px; }
+    .lb-fr-bar-label {
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: .65rem; color: #475569; margin-bottom: 5px;
+      font-weight: 600;
+    }
+    .lb-fr-bar-track {
+      height: 7px; background: rgba(30,41,59,.9); border-radius: 4px;
+      overflow: hidden;
+    }
+    .lb-fr-bar-fill {
+      height: 100%; border-radius: 4px;
+      background: linear-gradient(90deg, #f59e0b, #d97706);
+      transition: width .8s ease;
+    }
+
+    /* Allocation bars */
+    .lb-alloc-row {
+      display: flex; align-items: center; gap: 8px; margin-bottom: 7px;
+    }
+    .lb-alloc-name {
+      font-size: .67rem; color: #64748b; width: 80px;
+      flex-shrink: 0; font-weight: 500;
+    }
+    .lb-alloc-bar-track {
+      flex: 1; height: 5px; background: rgba(30,41,59,.9); border-radius: 3px;
+    }
+    .lb-alloc-bar-fill {
+      height: 100%; border-radius: 3px;
+      background: linear-gradient(90deg, #1d4ed8, #3b82f6);
+      transition: width .6s ease;
+    }
+    .lb-alloc-pct {
+      font-size: .67rem; color: #475569; width: 34px;
+      text-align: right; font-weight: 700; flex-shrink: 0;
+    }
+
+    /* Scenario selector */
+    .lb-scenario-sel {
+      width: 100%; background: rgba(15,23,42,.8);
+      border: 1px solid rgba(30,41,59,.9); color: #94a3b8;
+      padding: 7px 10px; border-radius: 7px; font-size: .77rem;
+      font-family: inherit; outline: none; cursor: pointer;
+    }
+    .lb-scenario-sel:focus { border-color: var(--lb-gold-border); }
 
     /* Stage tracker */
-    .di-stage {
-      display: flex; align-items: flex-start; gap: 10px;
-      padding: 8px 0; cursor: default;
-    }
-    .di-stage-dot {
-      width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
+    .lb-stage { display: flex; align-items: flex-start; gap: 10px; padding: 7px 0; }
+    .lb-stage-dot {
+      width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0;
       display: flex; align-items: center; justify-content: center;
-      font-size: .65rem; font-weight: 800; margin-top: 1px;
-      border: 2px solid rgba(71,85,105,.5); color: #475569;
-      background: transparent; transition: all .3s;
+      font-size: .64rem; font-weight: 800; margin-top: 1px;
+      border: 2px solid rgba(51,65,85,.6); color: #334155; background: transparent;
+      transition: all .3s;
     }
-    .di-stage.active .di-stage-dot {
-      border-color: #6366f1; color: #fff;
-      background: linear-gradient(135deg,#6366f1,#2563eb);
-      box-shadow: 0 0 12px rgba(99,102,241,.4);
+    .lb-stage.active .lb-stage-dot {
+      border-color: var(--lb-gold); color: #0b1628;
+      background: var(--lb-gold);
+      box-shadow: 0 0 12px rgba(201,168,76,.35);
     }
-    .di-stage.done .di-stage-dot {
+    .lb-stage.done .lb-stage-dot {
       border-color: #10b981; color: #fff; background: #10b981;
     }
-    .di-stage-text { flex: 1; }
-    .di-stage-name {
-      font-size: .78rem; font-weight: 600; color: #64748b;
-      line-height: 1.2;
-    }
-    .di-stage.active .di-stage-name { color: var(--text); }
-    .di-stage.done  .di-stage-name { color: #10b981; }
-    .di-stage-sub {
-      font-size: .67rem; color: #334155; margin-top: 2px; line-height: 1.35;
-    }
-    .di-stage.active .di-stage-sub { color: #64748b; }
+    .lb-stage-text { flex: 1; }
+    .lb-stage-name  { font-size: .77rem; font-weight: 600; color: #334155; line-height: 1.2; }
+    .lb-stage.active .lb-stage-name { color: #e2e8f0; }
+    .lb-stage.done  .lb-stage-name  { color: #10b981; }
+    .lb-stage-sub   { font-size: .64rem; color: #1e293b; margin-top: 2px; line-height: 1.35; }
+    .lb-stage.active .lb-stage-sub  { color: #475569; }
+    .lb-connector { width: 2px; height: 12px; background: rgba(51,65,85,.4); margin-left: 11px; }
 
-    /* Stage connector line */
-    .di-stage-connector {
-      width: 2px; height: 14px; background: rgba(71,85,105,.25);
-      margin-left: 10px; flex-shrink: 0;
-    }
-
-    /* Quick prompts per stage */
-    .di-quick-btn {
+    /* Response starters */
+    .lb-hint-btn {
       width: 100%; text-align: left;
-      background: rgba(15,23,42,.5); border: 1px solid rgba(30,41,59,.8);
-      color: #475569; padding: 7px 10px; border-radius: 6px;
+      background: rgba(11,22,40,.6); border: 1px solid rgba(30,41,59,.8);
+      color: #334155; padding: 7px 10px; border-radius: 6px;
       font-size: .71rem; font-weight: 500; cursor: pointer;
-      font-family: var(--font); line-height: 1.4; margin-bottom: 4px;
-      transition: all .15s;
+      font-family: inherit; line-height: 1.4; margin-bottom: 4px;
+      transition: all .15s; display: flex; gap: 7px; align-items: flex-start;
     }
-    .di-quick-btn:hover {
-      background: rgba(99,102,241,.08); border-color: rgba(99,102,241,.3);
-      color: #94a3b8;
+    .lb-hint-btn:hover {
+      background: rgba(201,168,76,.06); border-color: var(--lb-gold-border);
+      color: #64748b;
     }
-
-    /* Memo / evaluation status */
-    .di-status-card {
-      margin: 0; padding: 12px;
-      background: rgba(15,23,42,.6); border-radius: 8px;
-      border: 1px solid rgba(30,41,59,.8);
-    }
-    .di-status-label {
-      font-size: .65rem; font-weight: 700; letter-spacing: .1em;
-      text-transform: uppercase; color: #475569; margin-bottom: 6px;
-    }
-    .di-status-val { font-size: .8rem; color: #64748b; line-height: 1.5; }
-
-    /* ── RIGHT: Chat area ── */
-    .di-chat-pane {
-      flex: 1; display: flex; flex-direction: column; overflow: hidden;
-      background: var(--bg);
+    .lb-hint-num {
+      font-size: .62rem; font-weight: 800; color: var(--lb-gold);
+      flex-shrink: 0; width: 14px; padding-top: 1px;
     }
 
-    /* Interview context banner */
-    .di-context-bar {
-      padding: 8px 24px;
-      background: rgba(15,23,42,.7);
+    /* ── CHAT PANE ── */
+    .lb-chat { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+    /* Context bar */
+    .lb-ctx-bar {
+      padding: 8px 24px; flex-shrink: 0;
+      background: rgba(8,14,26,.8);
       border-bottom: 1px solid rgba(30,41,59,.8);
-      display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
     }
-    .di-ctx-pill {
-      font-size: .68rem; padding: 2px 9px; border-radius: 10px;
+    .lb-cpill {
+      font-size: .67rem; padding: 2px 9px; border-radius: 10px;
       font-weight: 600; letter-spacing: .02em;
     }
-    .di-ctx-pill.fund    { background: rgba(37,99,235,.12); color: #60a5fa; border: 1px solid rgba(37,99,235,.25); }
-    .di-ctx-pill.model   { background: rgba(16,185,129,.1);  color: #34d399; border: 1px solid rgba(16,185,129,.25); }
-    .di-ctx-pill.session { background: rgba(99,102,241,.1);  color: #818cf8; border: 1px solid rgba(99,102,241,.25); }
+    .lb-cpill.gold  { background: var(--lb-gold-dim); color: var(--lb-gold); border: 1px solid var(--lb-gold-border); }
+    .lb-cpill.blue  { background: rgba(37,99,235,.1); color: #60a5fa; border: 1px solid rgba(37,99,235,.25); }
+    .lb-cpill.green { background: rgba(16,185,129,.08); color: #34d399; border: 1px solid rgba(16,185,129,.2); }
+    .lb-cpill.warn  { background: rgba(245,158,11,.1); color: #fbbf24; border: 1px solid rgba(245,158,11,.25); }
 
     /* Messages */
-    .di-messages {
-      flex: 1; overflow-y: auto; padding: 24px;
-      display: flex; flex-direction: column; gap: 16px;
+    .lb-msgs {
+      flex: 1; overflow-y: auto; padding: 24px 28px;
+      display: flex; flex-direction: column; gap: 18px;
     }
 
-    /* MD (AI) message */
-    .di-msg-md {
-      display: flex; gap: 12px; align-items: flex-start;
-      max-width: 820px;
-    }
-    .di-avatar-md {
-      width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
-      background: linear-gradient(135deg, #1e3a5f, #0f2744);
-      border: 1px solid rgba(37,99,235,.4);
+    /* CIO message */
+    .lb-msg-cio { display: flex; gap: 12px; max-width: 840px; }
+    .lb-av-cio {
+      width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0;
+      background: linear-gradient(145deg, #0f2744, #1a3a6b);
+      border: 1px solid var(--lb-gold-border);
       display: flex; align-items: center; justify-content: center;
-      font-size: .65rem; font-weight: 800; color: #60a5fa;
-      letter-spacing: .02em;
     }
-    .di-msg-md-body {
-      background: rgba(15,23,42,.85);
+    .lb-av-cio svg { width: 22px; height: 22px; }
+    .lb-cio-bubble {
+      background: rgba(11,22,40,.9);
       border: 1px solid rgba(30,41,59,.9);
       border-radius: 0 12px 12px 12px;
-      padding: 14px 18px;
-      font-size: .84rem; color: var(--text); line-height: 1.7;
+      padding: 16px 20px;
+      font-size: .85rem; color: #cbd5e1; line-height: 1.72;
     }
-    .di-msg-md-body strong { color: #e2e8f0; }
-    .di-msg-md-body em { color: #818cf8; font-style: normal; font-weight: 600; }
+    .lb-cio-bubble strong { color: #f1f5f9; font-weight: 700; }
+    .lb-cio-bubble em     { color: var(--lb-gold); font-style: normal; font-weight: 600; }
+    .lb-cio-meta {
+      font-size: .64rem; color: #334155; margin-top: 8px; font-weight: 600;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .lb-cio-meta::before { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--lb-gold); }
 
-    /* GP (user) message */
-    .di-msg-gp {
-      display: flex; gap: 12px; align-items: flex-start;
-      max-width: 780px; align-self: flex-end; flex-direction: row-reverse;
+    /* GP message */
+    .lb-msg-gp {
+      display: flex; gap: 12px; max-width: 780px;
+      align-self: flex-end; flex-direction: row-reverse;
     }
-    .di-avatar-gp {
-      width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
-      background: rgba(99,102,241,.15); border: 1px solid rgba(99,102,241,.3);
+    .lb-av-gp {
+      width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0;
+      background: rgba(99,102,241,.12); border: 1px solid rgba(99,102,241,.3);
       display: flex; align-items: center; justify-content: center;
-      font-size: .65rem; font-weight: 800; color: #818cf8;
+      font-size: .68rem; font-weight: 800; color: #818cf8;
+      letter-spacing: .04em;
     }
-    .di-msg-gp-body {
-      background: rgba(99,102,241,.08);
-      border: 1px solid rgba(99,102,241,.2);
+    .lb-gp-bubble {
+      background: rgba(30,27,75,.4); border: 1px solid rgba(99,102,241,.2);
       border-radius: 12px 0 12px 12px;
-      padding: 12px 16px;
-      font-size: .84rem; color: #c7d2fe; line-height: 1.65;
+      padding: 12px 16px; font-size: .85rem; color: #c7d2fe; line-height: 1.65;
     }
 
     /* Typing dots */
-    .di-typing { display: flex; gap: 5px; align-items: center; padding: 4px 0; }
-    .di-dot {
+    .lb-typing { display: flex; gap: 5px; align-items: center; padding: 2px 0; }
+    .lb-dot {
       width: 7px; height: 7px; border-radius: 50%;
-      background: #3b82f6; opacity: .4;
-      animation: diPulse 1.2s infinite;
+      background: var(--lb-gold); opacity: .4;
+      animation: lbPulse 1.2s infinite;
     }
-    .di-dot:nth-child(2) { animation-delay: .2s; }
-    .di-dot:nth-child(3) { animation-delay: .4s; }
-    @keyframes diPulse { 0%,100%{opacity:.2;transform:scale(.8)} 50%{opacity:1;transform:scale(1.1)} }
+    .lb-dot:nth-child(2) { animation-delay: .2s; }
+    .lb-dot:nth-child(3) { animation-delay: .4s; }
+    @keyframes lbPulse { 0%,100%{opacity:.2;transform:scale(.8)} 50%{opacity:1;transform:scale(1.15)} }
 
-    /* Stage header in chat */
-    .di-stage-header {
-      display: flex; align-items: center; gap: 10px;
-      padding: 7px 14px; border-radius: 8px;
-      background: rgba(99,102,241,.07); border: 1px solid rgba(99,102,241,.18);
-      font-size: .72rem; font-weight: 700; color: #6366f1;
-      letter-spacing: .06em; text-transform: uppercase;
-      align-self: center; margin: 4px 0;
+    /* Stage break in chat */
+    .lb-stage-break {
+      display: flex; align-items: center; gap: 12px;
+      font-size: .67rem; font-weight: 700; color: #334155;
+      letter-spacing: .1em; text-transform: uppercase; align-self: center;
+      margin: 4px 0;
     }
-    .di-stage-header::before, .di-stage-header::after {
-      content: ''; flex: 1; height: 1px; background: rgba(99,102,241,.2);
+    .lb-stage-break::before, .lb-stage-break::after {
+      content: ''; flex: 1; height: 1px; background: rgba(30,41,59,.8);
+    }
+    .lb-stage-break span {
+      background: rgba(201,168,76,.08); border: 1px solid var(--lb-gold-border);
+      color: var(--lb-gold); padding: 3px 12px; border-radius: 10px;
+      white-space: nowrap;
     }
 
-    /* Memo output */
-    .di-memo {
-      background: rgba(8,11,20,.9); border: 1px solid rgba(99,102,241,.3);
-      border-radius: 12px; padding: 20px 24px; margin-top: 4px;
-      font-size: .82rem; color: var(--text); line-height: 1.75;
+    /* Memo card */
+    .lb-memo {
+      background: rgba(8,14,26,.95); border: 1px solid var(--lb-gold-border);
+      border-radius: 12px; padding: 22px 26px;
+      font-size: .83rem; color: #cbd5e1; line-height: 1.78;
     }
-    .di-memo h3 {
-      font-size: .7rem; font-weight: 800; letter-spacing: .12em;
-      text-transform: uppercase; color: #475569; margin: 16px 0 6px;
+    .lb-memo-header {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      gap: 16px; margin-bottom: 18px; padding-bottom: 16px;
+      border-bottom: 1px solid rgba(201,168,76,.2);
     }
-    .di-memo h3:first-child { margin-top: 0; }
-    .di-memo .pass  { color: #10b981; font-weight: 800; }
-    .di-memo .fail  { color: #ef4444; font-weight: 800; }
-    .di-memo .cond  { color: #f59e0b; font-weight: 800; }
+    .lb-memo-title {
+      font-size: .64rem; font-weight: 800; letter-spacing: .12em;
+      text-transform: uppercase; color: var(--lb-gold); margin-bottom: 4px;
+    }
+    .lb-memo-fund { font-size: .9rem; font-weight: 800; color: #f1f5f9; }
+    .lb-memo-rec {
+      text-align: right; font-size: .78rem;
+    }
+    .lb-memo-rec-label { font-size: .6rem; letter-spacing: .08em; text-transform: uppercase; color: #475569; margin-bottom: 3px; }
+    .lb-verdict { font-size: 1.1rem; font-weight: 900; letter-spacing: .04em; }
+    .lb-verdict.pass { color: #10b981; }
+    .lb-verdict.fail { color: #ef4444; }
+    .lb-verdict.cond { color: #f59e0b; }
+    .lb-memo h3 {
+      font-size: .62rem; font-weight: 800; letter-spacing: .1em;
+      text-transform: uppercase; color: #334155;
+      margin: 16px 0 6px; padding-top: 12px;
+      border-top: 1px solid rgba(30,41,59,.8);
+    }
+    .lb-memo h3:first-of-type { border-top: none; margin-top: 0; padding-top: 0; }
+    .lb-memo ul { margin: 0; padding-left: 16px; }
+    .lb-memo li { margin-bottom: 4px; }
+    .lb-lb-seal {
+      display: flex; align-items: center; gap: 8px; margin-top: 16px;
+      padding-top: 14px; border-top: 1px solid rgba(201,168,76,.15);
+      font-size: .68rem; color: #334155; font-weight: 600;
+    }
 
-    /* Input area */
-    .di-input-bar {
-      padding: 14px 24px 16px;
-      border-top: 1px solid var(--border);
-      background: rgba(8,11,20,.8);
-      flex-shrink: 0;
+    /* Input bar */
+    .lb-input-bar {
+      padding: 14px 24px 16px; border-top: 1px solid rgba(30,41,59,.8);
+      background: rgba(8,14,26,.85); flex-shrink: 0;
     }
-    .di-input-row {
-      display: flex; gap: 10px; align-items: flex-end;
-    }
-    .di-textarea {
-      flex: 1; background: rgba(15,23,42,.8); border: 1px solid rgba(30,41,59,.9);
-      border-radius: 10px; color: var(--text); font-size: .84rem;
-      font-family: var(--font); line-height: 1.6; padding: 10px 14px;
+    .lb-input-row { display: flex; gap: 10px; align-items: flex-end; }
+    .lb-textarea {
+      flex: 1; background: rgba(11,22,40,.9); border: 1px solid rgba(30,41,59,.9);
+      border-radius: 10px; color: #cbd5e1; font-size: .84rem;
+      font-family: inherit; line-height: 1.6; padding: 10px 14px;
       resize: none; min-height: 46px; max-height: 140px; outline: none;
       transition: border-color .15s;
     }
-    .di-textarea:focus { border-color: rgba(99,102,241,.5); }
-    .di-textarea::placeholder { color: #334155; }
-    .di-send-btn {
-      background: linear-gradient(135deg,#6366f1,#2563eb);
-      border: none; border-radius: 9px; color: #fff; font-size: .82rem;
-      font-weight: 700; font-family: var(--font); padding: 10px 22px;
+    .lb-textarea:focus { border-color: var(--lb-gold-border); }
+    .lb-textarea::placeholder { color: #1e293b; }
+    .lb-send-btn {
+      background: linear-gradient(135deg, #b8860b, #c9a84c);
+      border: none; border-radius: 9px; color: #0b1628; font-size: .82rem;
+      font-weight: 800; font-family: inherit; padding: 10px 22px;
       cursor: pointer; white-space: nowrap; flex-shrink: 0;
-      transition: filter .15s, transform .1s;
+      transition: filter .15s, transform .1s; letter-spacing: .02em;
     }
-    .di-send-btn:hover { filter: brightness(1.12); transform: translateY(-1px); }
-    .di-input-hint {
-      font-size: .67rem; color: #1e293b; margin-top: 6px;
-    }
+    .lb-send-btn:hover  { filter: brightness(1.12); transform: translateY(-1px); }
+    .lb-send-btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+    .lb-input-hint { font-size: .66rem; color: #1e293b; margin-top: 6px; }
+
+    /* Scroll bar */
+    .lb-msgs::-webkit-scrollbar { width: 4px; }
+    .lb-msgs::-webkit-scrollbar-track { background: transparent; }
+    .lb-msgs::-webkit-scrollbar-thumb { background: rgba(201,168,76,.2); border-radius: 2px; }
+    .lb-sidebar::-webkit-scrollbar { width: 3px; }
+    .lb-sidebar::-webkit-scrollbar-thumb { background: rgba(30,41,59,.8); border-radius: 2px; }
   </style>
 </head>
 <body>
 <div id="app">
 
 <!-- ── HEADER ── -->
-<div class="di-header">
-  <div class="di-header-left">
-    <div class="nav-logo-wordmark" style="margin-right:4px">
-      <div class="nav-logo-line1" style="font-size:1.1rem">
-        <span class="nav-logo-ai-enhanced">AI-Enhanced&nbsp;</span><span class="nav-logo-ahp">AHP</span>
-      </div>
-      <div class="nav-logo-line2">Portfolio Allocation</div>
+<div class="lb-header">
+  <div class="lb-brand">
+    <!-- Liberty Bell SVG icon -->
+    <svg class="lb-bell-icon" viewBox="0 0 60 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M30 4C30 4 12 16 12 36C12 52 20 58 20 58H40C40 58 48 52 48 36C48 16 30 4 30 4Z" fill="url(#bellGrad)" stroke="#c9a84c" stroke-width="1.5"/>
+      <path d="M22 58L18 64H42L38 58" fill="#b8860b" stroke="#c9a84c" stroke-width="1"/>
+      <rect x="24" y="64" width="12" height="3" rx="1.5" fill="#c9a84c"/>
+      <circle cx="30" cy="52" r="3" fill="#0b1628" stroke="#c9a84c" stroke-width="1.2"/>
+      <line x1="30" y1="55" x2="30" y2="62" stroke="#c9a84c" stroke-width="1.5"/>
+      <path d="M14 36C14 36 10 38 10 40" stroke="#c9a84c" stroke-width="1.5" stroke-linecap="round"/>
+      <path d="M46 36C46 36 50 38 50 40" stroke="#c9a84c" stroke-width="1.5" stroke-linecap="round"/>
+      <defs>
+        <linearGradient id="bellGrad" x1="12" y1="4" x2="48" y2="64" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="#1a3a6b"/>
+          <stop offset="100%" stop-color="#0b1e3d"/>
+        </linearGradient>
+      </defs>
+    </svg>
+    <div class="lb-name">
+      <div class="lb-name-main">Liberty Bell</div>
+      <div class="lb-name-sub">Defined Benefit Pension Fund · Est. 1973</div>
     </div>
-    <div class="di-org-badge">Public Pension Fund · $180B AUM</div>
-    <div class="di-session-badge">● LIVE DUE DILIGENCE SESSION</div>
   </div>
-  <div class="di-header-right">
-    <div class="di-api-wrap">
-      <span style="font-size:.72rem;color:var(--muted)">🔑</span>
-      <input type="password" id="apiKey" placeholder="Anthropic API key required">
+  <div class="lb-header-mid">
+    <div class="lb-hbadge desk">Capital Allocator Desk</div>
+    <div class="lb-hbadge session">● Live GP Review</div>
+  </div>
+  <div class="lb-header-right">
+    <div class="lb-api-wrap">
+      <span style="font-size:.7rem;color:#334155">🔑</span>
+      <input type="password" id="apiKey" placeholder="Anthropic API key">
     </div>
-    <button class="di-clear-btn" onclick="clearDiligence()">↺ New Session</button>
+    <button class="lb-new-btn" onclick="clearDiligence()">↺ New Session</button>
   </div>
 </div>
 
-<!-- hidden inputs app.js needs -->
+<!-- hidden stubs for app.js compatibility -->
 <input type="hidden" id="chatMode" value="DILIGENCE">
-<input type="hidden" id="cfgFund" value="GP Fund">
-<input type="hidden" id="cfgAum" value="0">
+<input type="hidden" id="cfgFund" value="Liberty Bell Pension Fund">
+<input type="hidden" id="cfgAum" value="3.2">
 <input type="hidden" id="cfgScenario" value="Steady Growth">
-<input type="hidden" id="cfgFunded" value="100">
-<input type="hidden" id="runBtn">
+<input type="hidden" id="cfgFunded" value="87">
+<div id="modeDesc" style="display:none"></div>
+<div id="chatContextStatus" style="display:none"></div>
+<button id="runBtn" style="display:none" onclick="runModel()"></button>
 
-<!-- ── BODY ── -->
-<div class="di-body">
+<!-- ── MAIN BODY ── -->
+<div class="lb-body">
 
   <!-- ── LEFT SIDEBAR ── -->
-  <div class="di-sidebar">
+  <div class="lb-sidebar">
 
-    <!-- Interview pipeline stages -->
-    <div class="di-sidebar-section">
-      <div class="di-sidebar-label">Interview Pipeline</div>
-
-      <div class="di-stage active" id="stage1">
-        <div class="di-stage-dot">1</div>
-        <div class="di-stage-text">
-          <div class="di-stage-name">Strategic Edge</div>
-          <div class="di-stage-sub">Deal sourcing · Proprietary vs brokered · IRR disparity</div>
+    <!-- Fund Profile -->
+    <div class="lb-sb-sec">
+      <div class="lb-sb-title">Fund Profile</div>
+      <div class="lb-fund-card">
+        <div class="lb-fund-name">Liberty Bell Pension Fund</div>
+        <div class="lb-fund-loc">Philadelphia, PA · Municipal DB Fund</div>
+        <div class="lb-fund-stats">
+          <div class="lb-stat">
+            <div class="lb-stat-label">AUM</div>
+            <div class="lb-stat-val amber">$3.2B</div>
+            <div class="lb-stat-sub">Defined Benefit</div>
+          </div>
+          <div class="lb-stat">
+            <div class="lb-stat-label">Beneficiaries</div>
+            <div class="lb-stat-val" style="font-size:.88rem">14,200</div>
+            <div class="lb-stat-sub">Active + Retired</div>
+          </div>
+          <div class="lb-stat">
+            <div class="lb-stat-label">Funded Ratio</div>
+            <div class="lb-stat-val warn" id="sbFunded">87%</div>
+            <div class="lb-stat-sub">Target: 90%</div>
+          </div>
+          <div class="lb-stat">
+            <div class="lb-stat-label">AHP Grade</div>
+            <div class="lb-stat-val green" id="sbGrade">—</div>
+            <div class="lb-stat-sub">Consistency</div>
+          </div>
         </div>
-      </div>
-      <div class="di-stage-connector"></div>
-      <div class="di-stage" id="stage2">
-        <div class="di-stage-dot">2</div>
-        <div class="di-stage-text">
-          <div class="di-stage-name">People, Process, Product</div>
-          <div class="di-stage-sub">IC dynamics · Kill switches · Distressed asset examples</div>
-        </div>
-      </div>
-      <div class="di-stage-connector"></div>
-      <div class="di-stage" id="stage3">
-        <div class="di-stage-dot">3</div>
-        <div class="di-stage-text">
-          <div class="di-stage-name">Fees, Leverage & Alignment</div>
-          <div class="di-stage-sub">GP commitment · Subscription lines · Carry structure</div>
-        </div>
-      </div>
-      <div class="di-stage-connector"></div>
-      <div class="di-stage" id="stage4">
-        <div class="di-stage-dot">4</div>
-        <div class="di-stage-text">
-          <div class="di-stage-name">DEI, ESG & Governance</div>
-          <div class="di-stage-sub">ILPA DDQ · Walked-away deals · Board composition</div>
-        </div>
-      </div>
-      <div class="di-stage-connector"></div>
-      <div class="di-stage" id="stage5">
-        <div class="di-stage-dot">✦</div>
-        <div class="di-stage-text">
-          <div class="di-stage-name">Investment Memo</div>
-          <div class="di-stage-sub">Pass / Conditional / Fail · $50M recommendation</div>
+        <!-- Funded ratio bar -->
+        <div class="lb-fr-bar-wrap">
+          <div class="lb-fr-bar-label">
+            <span>Funded Ratio</span>
+            <span id="sbFundedPct">87% of 90% target</span>
+          </div>
+          <div class="lb-fr-bar-track">
+            <div class="lb-fr-bar-fill" id="sbFundedBar" style="width:87%"></div>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Response prompts -->
-    <div class="di-sidebar-section">
-      <div class="di-sidebar-label">Response Starters</div>
-      <button class="di-quick-btn" onclick="diQuick('Our last fund had 68% proprietary deals sourced through our operating partner network, delivering 340bps alpha over brokered transactions at 22% net IRR versus 18.6%.')">Stage 1 — Strong sourcing answer</button>
-      <button class="di-quick-btn" onclick="diQuick('Our IC requires unanimous approval for investments over $50M, and any partner can invoke a mandatory 30-day pause. We exited a logistics position in 2022 at a 1.4x after our VP flagged covenant drift.')">Stage 2 — IC process example</button>
-      <button class="di-quick-btn" onclick="diQuick('100% of our $12M GP commitment is out-of-pocket capital. We use subscription lines only for bridging the first 90 days, never for IRR enhancement. Our carry vests over 5 years with a 100% clawback.')">Stage 3 — Alignment answer</button>
-      <button class="di-quick-btn" onclick="diQuick('We declined a $200M logistics asset in 2023 despite a projected 19% IRR because the operating company had zero women in senior management and no pathway to TCFD reporting. We are fully ILPA DDQ aligned.')">Stage 4 — ESG/DEI answer</button>
+    <!-- Scenario & Live Allocation -->
+    <div class="lb-sb-sec">
+      <div class="lb-sb-title">Active Scenario</div>
+      <select class="lb-scenario-sel" id="sbScenario" onchange="onScenarioChange(this.value)">
+        <option value="Steady Growth" selected>Steady Growth (45% prob)</option>
+        <option value="Bull Market">Bull Market (10% prob)</option>
+        <option value="Stagflation">Stagflation (15% prob)</option>
+        <option value="Deflation">Deflation (5% prob)</option>
+      </select>
+      <div style="margin-top:12px">
+        <div class="lb-sb-title" style="margin-bottom:8px">Current Allocation</div>
+        <div id="sbAllocBars">
+          <!-- rendered by JS after model run -->
+          <div id="sbAllocLoading" style="font-size:.72rem;color:#334155;text-align:center;padding:10px 0">
+            Run model to see live allocations
+          </div>
+        </div>
+      </div>
+      <button onclick="runModelAndRefresh()" style="margin-top:10px;width:100%;background:rgba(201,168,76,.1);border:1px solid var(--lb-gold-border);color:var(--lb-gold);font-size:.72rem;font-weight:700;padding:6px 0;border-radius:6px;cursor:pointer;font-family:inherit;letter-spacing:.04em" id="sbRunBtn">
+        ▶ LOAD FUND DATA
+      </button>
     </div>
 
-    <!-- Evaluator info -->
-    <div class="di-sidebar-section">
-      <div class="di-sidebar-label">Your Evaluator</div>
-      <div class="di-status-card">
-        <div style="font-size:.82rem;font-weight:700;color:#e2e8f0;margin-bottom:4px">Managing Director</div>
-        <div style="font-size:.72rem;color:#64748b;line-height:1.5">Institutional Capital Allocation<br>$180B Public Pension Fund<br>25+ years in alternatives</div>
-        <div style="margin-top:10px;font-size:.7rem;color:#475569;border-top:1px solid rgba(30,41,59,.8);padding-top:8px">Stakes: $50M allocation recommendation to Investment Board</div>
+    <!-- Interview Pipeline -->
+    <div class="lb-sb-sec">
+      <div class="lb-sb-title">Interview Pipeline</div>
+      <div class="lb-stage active" id="stage1">
+        <div class="lb-stage-dot">1</div>
+        <div class="lb-stage-text">
+          <div class="lb-stage-name">Strategic Edge</div>
+          <div class="lb-stage-sub">Sourcing · Proprietary vs brokered · IRR disparity</div>
+        </div>
+      </div>
+      <div class="lb-connector"></div>
+      <div class="lb-stage" id="stage2">
+        <div class="lb-stage-dot">2</div>
+        <div class="lb-stage-text">
+          <div class="lb-stage-name">People, Process, Product</div>
+          <div class="lb-stage-sub">IC dynamics · Kill switches · Real examples</div>
+        </div>
+      </div>
+      <div class="lb-connector"></div>
+      <div class="lb-stage" id="stage3">
+        <div class="lb-stage-dot">3</div>
+        <div class="lb-stage-text">
+          <div class="lb-stage-name">Fees & Alignment</div>
+          <div class="lb-stage-sub">GP commitment · Sub lines · Carry structure</div>
+        </div>
+      </div>
+      <div class="lb-connector"></div>
+      <div class="lb-stage" id="stage4">
+        <div class="lb-stage-dot">4</div>
+        <div class="lb-stage-text">
+          <div class="lb-stage-name">ESG & Governance</div>
+          <div class="lb-stage-sub">ILPA DDQ · Walked-away deals · Board data</div>
+        </div>
+      </div>
+      <div class="lb-connector"></div>
+      <div class="lb-stage" id="stage5">
+        <div class="lb-stage-dot">✦</div>
+        <div class="lb-stage-text">
+          <div class="lb-stage-name">Investment Memo</div>
+          <div class="lb-stage-sub">Board recommendation · $50M pass/fail</div>
+        </div>
       </div>
     </div>
 
-    <!-- ILPA note -->
-    <div class="di-sidebar-section">
-      <div class="di-sidebar-label">Standards Applied</div>
-      <div style="font-size:.72rem;color:#475569;line-height:1.6">
-        ILPA Due Diligence Standards<br>
-        TCFD / SASB ESG Reporting<br>
-        GIPS Performance Standards<br>
-        SEC Regulation S-K Item 101
+    <!-- Response Starters -->
+    <div class="lb-sb-sec">
+      <div class="lb-sb-title">Practice Responses</div>
+      <button class="lb-hint-btn" onclick="diQuick('Our last fund had 68% proprietary deal flow from our operating partner network across 14 cities. Proprietary deals returned 22.4% net IRR versus 17.1% on brokered — a 530 bps spread. We\'re scaling via 3 new sector verticals in healthcare and industrials.')">
+        <span class="lb-hint-num">S1</span><span>Strong sourcing answer with IRR data</span>
+      </button>
+      <button class="lb-hint-btn" onclick="diQuick('Our IC has seven members and any two can call a 30-day watchlist review. The trigger is a 15% covenant breach or 3 consecutive quarters of EBITDA miss. In 2022, our VP of Risk vetoed a logistics deal at the term sheet stage — we exited 18 months later at 1.3x after management issues surfaced anyway.')">
+        <span class="lb-hint-num">S2</span><span>IC process with a real exit example</span>
+      </button>
+      <button class="lb-hint-btn" onclick="diQuick('100% of our $18M GP commitment comes out of partner capital — no subscription lines used for IRR enhancement. We bridge the first 60 days only for admin costs. Our carry is 20% above an 8% hurdle with a 100% GP catch-up and full clawback, audited quarterly.')">
+        <span class="lb-hint-num">S3</span><span>Clean alignment + carry structure</span>
+      </button>
+      <button class="lb-hint-btn" onclick="diQuick('We passed on a $180M industrial roll-up in Q3 2023 despite a 21% projected IRR because the management team had no women above VP level and refused a TCFD pathway. We are fully ILPA DDQ compliant and submit annual ESG scorecards to all LPs.')">
+        <span class="lb-hint-num">S4</span><span>ESG deal walked away from</span>
+      </button>
+    </div>
+
+    <!-- Evaluator -->
+    <div class="lb-sb-sec" style="border-bottom:none">
+      <div class="lb-sb-title">Your Evaluator</div>
+      <div style="display:flex;gap:10px;align-items:flex-start">
+        <div style="width:38px;height:38px;border-radius:8px;background:linear-gradient(145deg,#0f2744,#1a3a6b);border:1px solid var(--lb-gold-border);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:800;color:var(--lb-gold)">SM</div>
+        <div>
+          <div style="font-size:.8rem;font-weight:700;color:#94a3b8">Sarah Mitchell, CIO</div>
+          <div style="font-size:.68rem;color:#334155;line-height:1.5;margin-top:2px">Liberty Bell Pension Fund<br>28 years in institutional capital<br>$160M alternatives sleeve</div>
+        </div>
+      </div>
+      <div style="margin-top:10px;font-size:.67rem;color:#1e293b;line-height:1.6">
+        Standards: ILPA DDQ · GIPS · TCFD · SEC Reg S-K
       </div>
     </div>
 
   </div><!-- /sidebar -->
 
   <!-- ── CHAT PANE ── -->
-  <div class="di-chat-pane">
+  <div class="lb-chat">
 
     <!-- Context bar -->
-    <div class="di-context-bar">
-      <span class="di-ctx-pill session">GP Due Diligence</span>
-      <span class="di-ctx-pill fund">Seeking $50M Allocation</span>
-      <span class="di-ctx-pill model">claude-sonnet-4-6</span>
-      <span id="chatContextStatus" style="font-size:.7rem;color:#334155;margin-left:4px"></span>
+    <div class="lb-ctx-bar">
+      <span class="lb-cpill gold">Liberty Bell Pension Fund</span>
+      <span class="lb-cpill warn">Funded 87% ↑ Target 90%</span>
+      <span class="lb-cpill blue" id="ctxScenario">Steady Growth</span>
+      <span class="lb-cpill green">Seeking $50M Allocation</span>
+      <span style="margin-left:auto;font-size:.66rem;color:#1e293b" id="ctxGrade"></span>
     </div>
 
     <!-- Messages -->
-    <div class="di-messages" id="chatArea">
+    <div class="lb-msgs" id="chatArea">
 
-      <!-- Opening statement from MD -->
-      <div class="di-msg-md">
-        <div class="di-avatar-md">MD</div>
-        <div class="di-msg-md-body">
-          Good afternoon. I manage alternatives capital for a $180 billion public pension fund. We have a short-list of four managers under consideration for a $50 million commitment in our next alternatives sleeve. You are one of them.<br><br>
-          I'll be direct — we conduct over sixty manager reviews a year. I am not looking for a pitch. I am looking for evidence. Our Investment Board requires a two-page memo from me with a clear pass or fail recommendation, and I intend to have everything I need from this conversation to write it.<br><br>
-          I'll take you through four areas. We go at my pace. We move on when I'm satisfied — not before.<br><br>
-          <strong>Let's begin with deal sourcing.</strong> Tell me how your last fund's investments break down between proprietary versus brokered deal sources. What was the return disparity between the two channels, and how are you scaling your proprietary sourcing in today's saturated market?
+      <!-- Opening from Sarah Mitchell / Liberty Bell CIO -->
+      <div class="lb-msg-cio">
+        <div class="lb-av-cio">
+          <svg viewBox="0 0 60 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M30 4C30 4 12 16 12 36C12 52 20 58 20 58H40C40 58 48 52 48 36C48 16 30 4 30 4Z" fill="url(#bellGrad2)" stroke="#c9a84c" stroke-width="1.5"/>
+            <circle cx="30" cy="50" r="3" fill="#0b1628" stroke="#c9a84c" stroke-width="1.2"/>
+            <defs>
+              <linearGradient id="bellGrad2" x1="12" y1="4" x2="48" y2="64" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#1a3a6b"/>
+                <stop offset="100%" stop-color="#0b1e3d"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <div>
+          <div class="lb-cio-bubble">
+            Good afternoon. I'm Sarah Mitchell, Chief Investment Officer at Liberty Bell Pension Fund. We manage <strong>$3.2 billion</strong> in defined benefit assets on behalf of <em>14,200 municipal employees and retirees</em> in Philadelphia. This is not a courtesy meeting.<br><br>
+            Our current funded ratio sits at <strong>87%</strong> — three points below our 90% target. Every allocation decision carries real consequences for real people's retirement security. Our Investment Policy Statement gives me a <strong>$160 million alternatives sleeve</strong>, and I have $50 million available for the right manager. You are one of four finalists.<br><br>
+            I need to write a two-page memo to our Investment Board by end of week. Everything I need for that memo will come from this conversation. My questions are direct. I expect your answers to be the same.<br><br>
+            <strong>Let's start with deal sourcing.</strong> Break down your last fund's investments between proprietary versus brokered deal flow — give me the percentage split and the IRR disparity between the two channels. Then tell me how you're scaling proprietary sourcing in a market where every PE firm is claiming the same edge.
+          </div>
+          <div class="lb-cio-meta">Sarah Mitchell, CIO · Liberty Bell Pension Fund · Stage 1 of 4</div>
         </div>
       </div>
 
     </div><!-- /messages -->
 
     <!-- Input bar -->
-    <div class="di-input-bar">
-      <div class="di-input-row">
-        <textarea class="di-textarea" id="chatInput"
-          placeholder="Respond to the Managing Director…"
+    <div class="lb-input-bar">
+      <div class="lb-input-row">
+        <textarea class="lb-textarea" id="chatInput"
+          placeholder="Respond to Sarah Mitchell, CIO — Liberty Bell Pension Fund is evaluating your firm…"
           rows="2"
           onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendDiligence()}"></textarea>
-        <button class="di-send-btn" id="diSendBtn" onclick="sendDiligence()">Respond</button>
+        <button class="lb-send-btn" id="diSendBtn" onclick="sendDiligence()">Respond →</button>
       </div>
-      <div class="di-input-hint">Shift+Enter for new line · Enter to submit · Your answers are evaluated in real time</div>
+      <div class="lb-input-hint">
+        Shift+Enter for new line · Enter to submit · Answers are evaluated against Liberty Bell's IPS constraints and ILPA standards
+      </div>
     </div>
 
   </div><!-- /chat pane -->
@@ -440,119 +645,184 @@
 </div><!-- /body -->
 
 </div><!-- /app -->
-
 <div id="toast"></div>
-
-<!-- Hidden stubs that app.js references (kept to avoid errors) -->
-<div id="modeDesc" style="display:none"></div>
-<div id="chatContextStatus" style="display:none"></div>
 
 <script src="/static/js/app.js"></script>
 <script>
-/* ── GP Due Diligence interview functions ── */
+/* ─── Liberty Bell GP Due Diligence Engine ─── */
 
-// Stage state tracking
-let diStage = 1;
+let diStage    = 1;
+let lbResult   = null; // AHP model result
+let lbScenario = 'Steady Growth';
 
-function markStage(n, done) {
+// Asset display colours
+const ASSET_COLORS = {
+  'Large Stocks':     '#3b82f6',
+  'Government Bonds': '#10b981',
+  'Corporate Bonds':  '#6366f1',
+  'Real Estate':      '#f59e0b',
+  'Small Stocks':     '#ec4899',
+  'Money Market':     '#14b8a6',
+  'Commodities':      '#f97316',
+};
+
+/* Stage tracker */
+function markStage(n, state) { // state: 'active'|'done'|'idle'
   const el = document.getElementById('stage' + n);
   if (!el) return;
-  if (done) {
-    el.classList.remove('active');
-    el.classList.add('done');
-    el.querySelector('.di-stage-dot').textContent = '✓';
-  } else {
-    el.classList.add('active');
-  }
+  el.classList.remove('active','done');
+  if (state === 'active') el.classList.add('active');
+  if (state === 'done')   el.classList.add('done');
+  const dot = el.querySelector('.lb-stage-dot');
+  if (state === 'done') dot.textContent = '✓';
+  else if (n === 5)     dot.textContent = '✦';
+  else                  dot.textContent = n;
 }
 
 function advanceStage() {
-  markStage(diStage, true);
+  markStage(diStage, 'done');
   diStage = Math.min(diStage + 1, 5);
-  if (diStage <= 5) markStage(diStage, false);
+  if (diStage <= 5) markStage(diStage, 'active');
 }
 
-// Detect stage advancement from AI response
 function detectStageAdvance(text) {
   const t = text.toLowerCase();
-  if (diStage === 1 && (t.includes('investment committee') || t.includes("3 p") || t.includes('people, process') || t.includes('process. walk me'))) advanceStage();
-  else if (diStage === 2 && (t.includes('alignment') || t.includes('subscription line') || t.includes('gp commitment') || t.includes('let\'s talk') && t.includes('fees'))) advanceStage();
-  else if (diStage === 3 && (t.includes('dei') || t.includes('esg') || t.includes('governance') || t.includes('ilpa'))) advanceStage();
-  else if (diStage === 4 && (t.includes('investment committee memo') || t.includes('recommendation:') || t.includes('i\'ve seen enough'))) advanceStage();
+  if (diStage === 1 && (t.includes('investment committee') || t.includes('3 p') || t.includes('people, process') || t.includes('walk me through') || t.includes('how your ic'))) advanceStage();
+  else if (diStage === 2 && (t.includes('subscription line') || t.includes('gp commitment') || t.includes('alignment') || (t.includes('fees') && (t.includes('carry') || t.includes('hurdle'))))) advanceStage();
+  else if (diStage === 3 && (t.includes('esg') || t.includes('dei') || t.includes('governance') || t.includes('ilpa') || t.includes('walked away'))) advanceStage();
+  else if (diStage === 4 && (t.includes('investment committee memo') || t.includes('recommendation:') || t.includes("seen enough"))) advanceStage();
 }
 
-async function sendDiligence() {
-  const input = document.getElementById('chatInput');
-  const apiKeyEl = document.getElementById('apiKey');
-  const msg = input?.value.trim();
-  if (!msg) return;
-  if (!apiKeyEl?.value.trim()) {
-    showToast('Enter your Anthropic API key first', 'error');
-    return;
+/* Load fund data from AHP model */
+async function runModelAndRefresh() {
+  const btn = document.getElementById('sbRunBtn');
+  if (btn) { btn.disabled = true; btn.textContent = '◌ Loading…'; }
+  try {
+    const resp = await fetch('/api/run', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        fund_name: 'Liberty Bell Pension Fund',
+        aum: 3.2, scenario: lbScenario, funded_ratio: 87,
+      }),
+    });
+    const data = await resp.json();
+    if (data.error) throw new Error(data.error);
+    lbResult = data;
+    renderAllocBars(data.constrained_weights);
+    const gradeEl = document.getElementById('sbGrade');
+    if (gradeEl) gradeEl.textContent = data.overall_grade || '—';
+    const ctxG = document.getElementById('ctxGrade');
+    if (ctxG && data.overall_grade) ctxG.textContent = `AHP Grade ${data.overall_grade}`;
+  } catch(e) {
+    const el = document.getElementById('sbAllocBars');
+    if (el) el.innerHTML = `<div style="font-size:.7rem;color:#f87171">Error: ${escHtml(e.message)}</div>`;
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '▶ REFRESH DATA'; }
   }
+}
+
+function onScenarioChange(val) {
+  lbScenario = val;
+  document.getElementById('ctxScenario').textContent = val;
+  document.getElementById('cfgScenario').value = val;
+  runModelAndRefresh();
+}
+
+function renderAllocBars(weights) {
+  const container = document.getElementById('sbAllocBars');
+  if (!container) return;
+  document.getElementById('sbAllocLoading')?.remove();
+  const sorted = Object.entries(weights).sort((a,b) => b[1]-a[1]);
+  container.innerHTML = sorted.map(([asset, pct]) => {
+    const col = ASSET_COLORS[asset] || '#6366f1';
+    const shortName = asset.replace(' Stocks','Stk').replace(' Bonds','Bnd').replace('Government','Govt').replace('Corporate','Corp').replace('Money Market','MM');
+    return `<div class="lb-alloc-row">
+      <span class="lb-alloc-name">${shortName}</span>
+      <div class="lb-alloc-bar-track">
+        <div class="lb-alloc-bar-fill" style="width:${(pct*100/0.4)*100}%;background:${col}"></div>
+      </div>
+      <span class="lb-alloc-pct">${(pct*100).toFixed(0)}%</span>
+    </div>`;
+  }).join('');
+}
+
+/* ── Send message ── */
+async function sendDiligence() {
+  const input     = document.getElementById('chatInput');
+  const apiKeyEl  = document.getElementById('apiKey');
+  const msg       = input?.value.trim();
+  if (!msg) return;
+  if (!apiKeyEl?.value.trim()) { showToast('Enter your Anthropic API key first', 'error'); return; }
+
+  const area = document.getElementById('chatArea');
 
   // Append GP message
-  const area = document.getElementById('chatArea');
   const gpDiv = document.createElement('div');
-  gpDiv.className = 'di-msg-gp';
-  gpDiv.innerHTML = `<div class="di-avatar-gp">GP</div><div class="di-msg-gp-body">${escHtml(msg)}</div>`;
+  gpDiv.className = 'lb-msg-gp';
+  gpDiv.innerHTML = `<div class="lb-av-gp">GP</div><div class="lb-gp-bubble">${escHtml(msg)}</div>`;
   area.appendChild(gpDiv);
   input.value = '';
   area.scrollTop = area.scrollHeight;
 
   // Typing indicator
   const typingDiv = document.createElement('div');
-  typingDiv.className = 'di-msg-md';
-  typingDiv.id = 'di-typing';
-  typingDiv.innerHTML = `<div class="di-avatar-md">MD</div><div class="di-msg-md-body"><div class="di-typing"><div class="di-dot"></div><div class="di-dot"></div><div class="di-dot"></div></div></div>`;
+  typingDiv.className = 'lb-msg-cio'; typingDiv.id = 'lb-typing';
+  typingDiv.innerHTML = `<div class="lb-av-cio"><svg viewBox="0 0 60 72" fill="none"><path d="M30 4C30 4 12 16 12 36C12 52 20 58 20 58H40C40 58 48 52 48 36C48 16 30 4 30 4Z" fill="#0f2744" stroke="#c9a84c" stroke-width="1.5"/></svg></div><div class="lb-cio-bubble"><div class="lb-typing"><div class="lb-dot"></div><div class="lb-dot"></div><div class="lb-dot"></div></div></div>`;
   area.appendChild(typingDiv);
   area.scrollTop = area.scrollHeight;
 
-  // Disable send
   const btn = document.getElementById('diSendBtn');
   if (btn) btn.disabled = true;
 
   try {
+    const ctx = lbResult ? {
+      fund_name: 'Liberty Bell Pension Fund', aum: 3.2,
+      scenario: lbScenario, funded_ratio: 87,
+      overall_grade: lbResult.overall_grade,
+      constrained_weights: lbResult.constrained_weights,
+      dollar_allocation: lbResult.dollar_allocation,
+    } : {};
+
     const resp = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        message: msg,
-        mode: 'DILIGENCE',
-        api_key: apiKeyEl.value.trim(),
-        model_context: {},
-      }),
+      body: JSON.stringify({ message: msg, mode: 'DILIGENCE', api_key: apiKeyEl.value.trim(), model_context: ctx }),
     });
     const data = await resp.json();
     if (data.error) throw new Error(data.error);
 
     const text = data.reply || '';
     detectStageAdvance(text);
+    document.getElementById('lb-typing')?.remove();
 
-    // Remove typing indicator
-    document.getElementById('di-typing')?.remove();
+    const isMemo = text.includes('INVESTMENT COMMITTEE MEMO') || text.includes("I've seen enough") || text.includes("I have seen enough");
 
-    // Render MD response
-    const mdDiv = document.createElement('div');
-    mdDiv.className = 'di-msg-md';
+    // Add stage break in chat if we just advanced
+    const cStage = diStage;
 
-    // Check if it's a closing memo
-    const isMemo = text.includes('INVESTMENT COMMITTEE MEMO') || text.includes('RECOMMENDATION:') || text.includes('Recommendation:');
+    const cioDiv = document.createElement('div');
+    cioDiv.className = 'lb-msg-cio';
+
+    const stageLabel = ['', 'Deal Sourcing', 'People, Process & Product', 'Fees & Alignment', 'ESG & Governance', 'Investment Memo'][cStage] || '';
 
     if (isMemo) {
-      mdDiv.innerHTML = `<div class="di-avatar-md">MD</div><div class="di-msg-md-body"><div class="di-memo">${formatMemo(text)}</div></div>`;
+      cioDiv.innerHTML = `
+        <div class="lb-av-cio"><svg viewBox="0 0 60 72" fill="none"><path d="M30 4C30 4 12 16 12 36C12 52 20 58 20 58H40C40 58 48 52 48 36C48 16 30 4 30 4Z" fill="#0f2744" stroke="#c9a84c" stroke-width="1.5"/></svg></div>
+        <div><div class="lb-cio-bubble">${formatMemo(text)}</div><div class="lb-cio-meta">Sarah Mitchell, CIO · Liberty Bell Investment Memo · Final</div></div>`;
     } else {
-      mdDiv.innerHTML = `<div class="di-avatar-md">MD</div><div class="di-msg-md-body">${formatDiText(text)}</div>`;
+      cioDiv.innerHTML = `
+        <div class="lb-av-cio"><svg viewBox="0 0 60 72" fill="none"><path d="M30 4C30 4 12 16 12 36C12 52 20 58 20 58H40C40 58 48 52 48 36C48 16 30 4 30 4Z" fill="#0f2744" stroke="#c9a84c" stroke-width="1.5"/></svg></div>
+        <div><div class="lb-cio-bubble">${formatDiText(text)}</div><div class="lb-cio-meta">Sarah Mitchell, CIO · Liberty Bell Pension Fund · Stage ${Math.min(cStage,4)} of 4</div></div>`;
     }
-
-    area.appendChild(mdDiv);
+    area.appendChild(cioDiv);
     area.scrollTop = area.scrollHeight;
 
   } catch(e) {
-    document.getElementById('di-typing')?.remove();
+    document.getElementById('lb-typing')?.remove();
     const errDiv = document.createElement('div');
-    errDiv.className = 'di-msg-md';
-    errDiv.innerHTML = `<div class="di-avatar-md">MD</div><div class="di-msg-md-body" style="color:#f87171">Error: ${escHtml(e.message)}</div>`;
+    errDiv.className = 'lb-msg-cio';
+    errDiv.innerHTML = `<div class="lb-av-cio"><svg viewBox="0 0 60 72" fill="none"><path d="M30 4C30 4 12 16 12 36C12 52 20 58 20 58H40C40 58 48 52 48 36C48 16 30 4 30 4Z" fill="#0f2744" stroke="#c9a84c" stroke-width="1.5"/></svg></div><div class="lb-cio-bubble" style="color:#f87171">Network error: ${escHtml(e.message)}</div>`;
     area.appendChild(errDiv);
   } finally {
     if (btn) btn.disabled = false;
@@ -560,72 +830,94 @@ async function sendDiligence() {
   }
 }
 
-function diQuick(text) {
-  document.getElementById('chatInput').value = text;
-  document.getElementById('chatInput').focus();
-}
+function diQuick(text) { document.getElementById('chatInput').value = text; document.getElementById('chatInput').focus(); }
 
 function clearDiligence() {
   if (!confirm('Start a new due diligence session? Current conversation will be cleared.')) return;
   fetch('/api/reset', { method: 'POST' }).catch(() => {});
   const area = document.getElementById('chatArea');
   area.innerHTML = `
-    <div class="di-msg-md">
-      <div class="di-avatar-md">MD</div>
-      <div class="di-msg-md-body">
-        Good afternoon. I manage alternatives capital for a $180 billion public pension fund. We have a short-list of four managers under consideration for a $50 million commitment in our next alternatives sleeve. You are one of them.<br><br>
-        I'll be direct — we conduct over sixty manager reviews a year. I am not looking for a pitch. I am looking for evidence. Our Investment Board requires a two-page memo from me with a clear pass or fail recommendation, and I intend to have everything I need from this conversation to write it.<br><br>
-        I'll take you through four areas. We go at my pace. We move on when I'm satisfied — not before.<br><br>
-        <strong>Let's begin with deal sourcing.</strong> Tell me how your last fund's investments break down between proprietary versus brokered deal sources. What was the return disparity between the two channels, and how are you scaling your proprietary sourcing in today's saturated market?
+    <div class="lb-msg-cio">
+      <div class="lb-av-cio"><svg viewBox="0 0 60 72" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M30 4C30 4 12 16 12 36C12 52 20 58 20 58H40C40 58 48 52 48 36C48 16 30 4 30 4Z" fill="url(#bg2)" stroke="#c9a84c" stroke-width="1.5"/><circle cx="30" cy="50" r="3" fill="#0b1628" stroke="#c9a84c" stroke-width="1.2"/><defs><linearGradient id="bg2" x1="12" y1="4" x2="48" y2="64" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#1a3a6b"/><stop offset="100%" stop-color="#0b1e3d"/></linearGradient></defs></svg></div>
+      <div>
+        <div class="lb-cio-bubble">
+          Good afternoon. I'm Sarah Mitchell, Chief Investment Officer at Liberty Bell Pension Fund. We manage <strong>$3.2 billion</strong> in defined benefit assets on behalf of <em>14,200 municipal employees and retirees</em> in Philadelphia. This is not a courtesy meeting.<br><br>
+          Our current funded ratio sits at <strong>87%</strong> — three points below our 90% target. Every allocation decision carries real consequences for real people's retirement security. Our Investment Policy Statement gives me a <strong>$160 million alternatives sleeve</strong>, and I have $50 million available for the right manager. You are one of four finalists.<br><br>
+          <strong>Let's start with deal sourcing.</strong> Break down your last fund's investments between proprietary versus brokered deal flow — give me the percentage split and the IRR disparity between the two channels. Then tell me how you're scaling proprietary sourcing in a market where every PE firm is claiming the same edge.
+        </div>
+        <div class="lb-cio-meta">Sarah Mitchell, CIO · Liberty Bell Pension Fund · Stage 1 of 4</div>
       </div>
     </div>`;
-  // Reset stages
   diStage = 1;
-  [1,2,3,4,5].forEach(n => {
-    const el = document.getElementById('stage'+n);
-    if (!el) return;
-    el.classList.remove('active','done');
-    el.querySelector('.di-stage-dot').textContent = n === 5 ? '✦' : n;
-  });
-  markStage(1, false);
+  [1,2,3,4,5].forEach(n => markStage(n, 'idle'));
+  markStage(1, 'active');
 }
 
 function escHtml(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
 }
-
-function formatDiText(text) {
-  // Bold **text**, italic *text*, line breaks
-  let s = escHtml(text);
-  s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-  s = s.replace(/\*([^*]+?)\*/g, '<em>$1</em>');
+function formatDiText(t) {
+  let s = escHtml(t);
+  s = s.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+  s = s.replace(/\*([^*]+?)\*/g,'<em style="color:var(--lb-gold);font-style:normal;font-weight:600">$1</em>');
   return s;
 }
-
 function formatMemo(text) {
-  let s = escHtml(text);
-  s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-  s = s.replace(/\*([^*]+?)\*/g, '<em>$1</em>');
-  // Section headers (ALL CAPS lines or lines ending in :)
-  s = s.replace(/^([A-Z][A-Z\s\/&amp;()-]{4,}:?)$/gm, '<h3>$1</h3>');
-  // PASS / FAIL / CONDITIONAL in the text
-  s = s.replace(/\bPASS\b/g, '<span class="pass">PASS</span>');
-  s = s.replace(/\bFAIL\b/g, '<span class="fail">FAIL</span>');
-  s = s.replace(/\bCONDITIONAL PASS\b/g, '<span class="cond">CONDITIONAL PASS</span>');
-  return s;
+  const lines = text.split('\n');
+  let html = '<div class="lb-memo">';
+  let inList = false;
+
+  // Extract recommendation
+  const recMatch = text.match(/Recommendation:\s*([^\n]+)/i);
+  const rec = recMatch ? recMatch[1].trim() : '';
+  const recClass = rec.includes('FAIL') ? 'fail' : rec.includes('CONDITIONAL') ? 'cond' : 'pass';
+
+  html += `<div class="lb-memo-header">
+    <div>
+      <div class="lb-memo-title">Investment Committee Memo · Liberty Bell Pension Fund</div>
+      <div class="lb-memo-fund">Proposed Allocation: $50M</div>
+    </div>
+    <div class="lb-memo-rec">
+      <div class="lb-memo-rec-label">Recommendation</div>
+      <div class="lb-verdict ${recClass}">${rec || '—'}</div>
+    </div>
+  </div>`;
+
+  for (const line of lines) {
+    const t = line.trim();
+    if (!t || t.startsWith('---')) continue;
+    if (/^(INVESTMENT COMMITTEE MEMO|Proposed Allocation:|Recommendation:)/i.test(t)) continue;
+    if (/^(EXECUTIVE SUMMARY|STRENGTHS|WEAKNESSES|CONDITIONAL|BOARD RECOMMENDATION|RED FLAGS)[:\s]/i.test(t) || /^[A-Z][A-Z\s\/&()-]{5,}:$/.test(t)) {
+      if (inList) { html += '</ul>'; inList = false; }
+      html += `<h3>${escHtml(t)}</h3>`;
+    } else if (t.startsWith('- ') || t.startsWith('• ')) {
+      if (!inList) { html += '<ul>'; inList = true; }
+      html += `<li>${escHtml(t.slice(2)).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')}</li>`;
+    } else {
+      if (inList) { html += '</ul>'; inList = false; }
+      html += `<p style="margin:4px 0">${escHtml(t).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')}</p>`;
+    }
+  }
+  if (inList) html += '</ul>';
+  html += `<div class="lb-lb-seal"><svg viewBox="0 0 60 72" fill="none" width="16" height="20"><path d="M30 4C30 4 12 16 12 36C12 52 20 58 20 58H40C40 58 48 52 48 36C48 16 30 4 30 4Z" fill="#0f2744" stroke="#c9a84c" stroke-width="1.5"/></svg>Liberty Bell Pension Fund · Philadelphia, PA · Confidential</div>`;
+  html += '</div>';
+  return html;
 }
 
-// Stub for app.js compatibility
 function showToast(msg, type) {
   const t = document.getElementById('toast');
   if (!t) return;
   t.textContent = msg;
   t.className = type === 'error' ? 'toast-error show' : 'show';
-  setTimeout(() => t.className = '', 3000);
+  setTimeout(() => t.className = '', 3500);
 }
 
-// Activate stage 1 on load
-window.addEventListener('DOMContentLoaded', () => markStage(1, false));
+// Init on load
+window.addEventListener('DOMContentLoaded', () => {
+  markStage(1, 'active');
+  // Auto-load fund data
+  runModelAndRefresh();
+});
 </script>
 </body>
 </html>
