@@ -269,15 +269,32 @@ def run_ahp():
     else:
         result['criteria_weights'] = {c: 1/len(CRITERIA) for c in CRITERIA}
 
+    # IPS policy bands (min/max per asset class after scenario + funded-ratio overlay)
+    constraints_out = {a: [float(lo), float(hi)] for a, (lo, hi) in model.constraints.items()}
+
+    # Baseline: long-term Steady Growth at 87% funded — used for delta comparison
+    baseline_model = build_liberty_bell_model()
+    if 'Steady Growth' in _SCENARIO_CRITERIA:
+        baseline_model.set_criteria_matrix(_SCENARIO_CRITERIA['Steady Growth'])
+    if 'Steady Growth' in _SCENARIO_ASSET_RETURN:
+        baseline_model.set_asset_matrix('Return', _SCENARIO_ASSET_RETURN['Steady Growth'])
+    if 'Steady Growth' in _SCENARIO_ASSET_RISK:
+        baseline_model.set_asset_matrix('Risk', _SCENARIO_ASSET_RISK['Steady Growth'])
+    if 'Steady Growth' in _SCENARIO_CONSTRAINTS:
+        baseline_model.constraints = _SCENARIO_CONSTRAINTS['Steady Growth'].copy()
+    baseline_weights = baseline_model.run()['constrained_weights']
+
     return jsonify({
-        'status':      'ok',
-        'fund_name':   fund_name,
-        'aum':         aum,
-        'scenario':    scenario,
-        'result':      result,
-        'monte_carlo': mc,
+        'status':        'ok',
+        'fund_name':     fund_name,
+        'aum':           aum,
+        'scenario':      scenario,
+        'result':        result,
+        'monte_carlo':   mc,
         'asset_classes': ASSET_CLASSES,
         'criteria':      CRITERIA,
+        'constraints':   constraints_out,
+        'baseline_weights': baseline_weights,
     })
 
 

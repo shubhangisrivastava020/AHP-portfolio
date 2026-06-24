@@ -166,14 +166,26 @@
     .param-select:focus, .param-input:focus { border-color: var(--lb-gold-border); }
     .param-input { appearance: textfield; }
 
-    /* Allocation bars */
-    .alloc-bars { display: flex; flex-direction: column; gap: 7px; }
-    .alloc-row { display: flex; align-items: center; gap: 8px; }
-    .alloc-name { font-size: .65rem; color: #475569; width: 82px; flex-shrink: 0; font-weight: 500; }
-    .alloc-track { flex: 1; height: 6px; background: rgba(20,34,60,.9); border-radius: 3px; }
-    .alloc-fill  { height: 100%; border-radius: 3px; transition: width .6s ease; }
-    .alloc-pct   { font-size: .68rem; color: #64748b; width: 36px; text-align: right; font-weight: 700; flex-shrink: 0; }
-    .alloc-dollar { font-size: .62rem; color: #334155; width: 44px; text-align: right; flex-shrink: 0; }
+    /* Allocation bars — Min/Max/Optimum range design */
+    .alloc-bars { display: flex; flex-direction: column; gap: 10px; }
+    .alloc-row { display: flex; flex-direction: column; gap: 3px; }
+    .alloc-row-top { display: flex; align-items: center; gap: 8px; }
+    .alloc-name { font-size: .65rem; color: #94a3b8; width: 78px; flex-shrink: 0; font-weight: 600; }
+    .alloc-range-wrap { flex: 1; position: relative; height: 10px; }
+    .alloc-range-track { position: absolute; inset: 0; background: rgba(15,25,46,.8); border-radius: 5px; }
+    .alloc-ips-zone { position: absolute; top: 0; height: 100%; background: rgba(201,168,76,.09); border-left: 1px solid rgba(201,168,76,.28); border-right: 1px solid rgba(201,168,76,.28); border-radius: 2px; }
+    .alloc-fill2 { position: absolute; top: 1px; left: 0; height: 8px; border-radius: 4px; transition: width .6s ease; }
+    .alloc-baseline-mk { position: absolute; top: -2px; width: 2px; height: 14px; background: rgba(148,163,184,.35); border-radius: 1px; z-index: 2; }
+    .alloc-opt-dot { position: absolute; top: 50%; width: 9px; height: 9px; border-radius: 50%; border: 2px solid rgba(8,14,26,.9); transform: translate(-50%,-50%); z-index: 3; }
+    .alloc-pct { font-size: .68rem; color: #e2e8f0; width: 32px; text-align: right; font-weight: 700; flex-shrink: 0; }
+    .alloc-dollar { font-size: .62rem; color: #64748b; width: 44px; text-align: right; flex-shrink: 0; }
+    .alloc-delta { font-size: .57rem; font-weight: 700; padding: 1px 5px; border-radius: 4px; white-space: nowrap; flex-shrink: 0; }
+    .alloc-delta.dpos { background: rgba(16,185,129,.12); color: #10b981; }
+    .alloc-delta.dneg { background: rgba(239,68,68,.12); color: #f87171; }
+    .alloc-delta.dflt { background: rgba(148,163,184,.08); color: #64748b; }
+    .alloc-ips-row { display: flex; gap: 14px; padding-left: 86px; }
+    .alloc-ips-label { font-size: .54rem; color: #334155; }
+    .alloc-ips-label span { color: #c9a84c; }
     .alloc-loading { font-size: .72rem; color: #2d3e5a; text-align: center; padding: 16px 0; }
 
     /* Benchmark chips */
@@ -478,8 +490,15 @@
 
     <!-- Live Allocation -->
     <div class="dsec">
-      <div class="dsec-title">AHP Allocation Output</div>
-      <div id="allocBars" class="alloc-bars">
+      <div class="dsec-title" style="display:flex;align-items:center;justify-content:space-between;">
+        <span>AHP Allocation Output</span>
+        <span style="display:flex;gap:10px;align-items:center;font-size:.54rem;color:#475569;font-weight:500;">
+          <span style="display:flex;align-items:center;gap:3px;"><span style="display:inline-block;width:22px;height:6px;background:rgba(201,168,76,.25);border:1px solid rgba(201,168,76,.4);border-radius:2px;"></span>IPS band</span>
+          <span style="display:flex;align-items:center;gap:3px;"><span style="display:inline-block;width:2px;height:10px;background:rgba(148,163,184,.5);border-radius:1px;"></span>Baseline</span>
+          <span style="display:flex;align-items:center;gap:3px;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#3b82f6;border:2px solid rgba(8,14,26,.9);"></span>Optimum</span>
+        </span>
+      </div>
+      <div id="allocBars" class="alloc-bars" style="margin-top:10px;">
         <div class="alloc-loading" id="allocLoading">Click ▶ Run Model to generate allocation</div>
       </div>
     </div>
@@ -745,28 +764,67 @@ function onParamChange() {
 }
 
 function renderAlloc(data) {
-  const w = data.constrained_weights || {};
-  const d = data.dollar_allocation || {};
-  const aum = parseFloat(document.getElementById('pAum')?.value || 3.2);
+  const w    = data.result?.constrained_weights || data.constrained_weights || {};
+  const d    = data.result?.dollar_allocation   || data.dollar_allocation   || {};
+  const cons = data.constraints || {};          // { asset: [min, max] }
+  const base = data.baseline_weights || {};     // Steady Growth reference
+
+  const aum       = parseFloat(document.getElementById('pAum')?.value || 3.2);
   const container = document.getElementById('allocBars');
   document.getElementById('allocLoading')?.remove();
+
+  // Scale: highest possible max across all constraints, or fallback 0.55
+  const SCALE = Math.max(0.55, ...Object.values(cons).map(b => b[1] || 0));
+
   const sorted = Object.entries(w).sort((a,b) => b[1]-a[1]);
-  const maxPct = sorted[0]?.[1] || 0.4;
+
   container.innerHTML = sorted.map(([asset, pct]) => {
     const col   = ASSET_COLORS[asset] || '#6366f1';
-    const short = asset.replace(' Stocks','').replace(' Bonds','').replace('Government','Govt').replace('Corporate','Corp').replace('Money Market','MM').replace('Commodities','Cmdty');
-    const dollar = d[asset] != null ? `$${d[asset].toFixed(2)}B` : `$${(pct*aum).toFixed(2)}B`;
+    const short = asset.replace(' Stocks','').replace(' Bonds','')
+                       .replace('Government','Govt').replace('Corporate','Corp')
+                       .replace('Money Market','MM').replace('Commodities','Cmdty');
+    const dollar  = d[asset] != null ? `$${d[asset].toFixed(2)}B` : `$${(pct*aum).toFixed(2)}B`;
+    const ips     = cons[asset] || [0, SCALE];
+    const ipsMin  = ips[0], ipsMax = ips[1];
+    const basePct = base[asset] ?? pct;
+    const delta   = Math.round((pct - basePct) * 100);
+    const deltaClass = delta > 1 ? 'dpos' : delta < -1 ? 'dneg' : 'dflt';
+    const deltaLbl   = delta > 0 ? `+${delta}%` : delta < 0 ? `${delta}%` : '≡ base';
+
+    // Positions as % of SCALE track width
+    const optPos  = (pct     / SCALE * 100).toFixed(1);
+    const fillW   = optPos;
+    const zoneL   = (ipsMin  / SCALE * 100).toFixed(1);
+    const zoneW   = ((ipsMax - ipsMin) / SCALE * 100).toFixed(1);
+    const basePos = (basePct / SCALE * 100).toFixed(1);
+
     return `<div class="alloc-row">
-      <span class="alloc-name" title="${asset}">${short}</span>
-      <div class="alloc-track"><div class="alloc-fill" style="width:${(pct/maxPct)*100}%;background:${col}"></div></div>
-      <span class="alloc-pct">${(pct*100).toFixed(0)}%</span>
-      <span class="alloc-dollar">${dollar}</span>
+      <div class="alloc-row-top">
+        <span class="alloc-name" title="${asset}">${short}</span>
+        <div class="alloc-range-wrap">
+          <div class="alloc-range-track"></div>
+          <div class="alloc-ips-zone"   style="left:${zoneL}%;width:${zoneW}%"></div>
+          <div class="alloc-fill2"      style="width:${fillW}%;background:${col}"></div>
+          <div class="alloc-baseline-mk" style="left:${basePos}%" title="Baseline (Steady Growth): ${(basePct*100).toFixed(0)}%"></div>
+          <div class="alloc-opt-dot"    style="left:${optPos}%;background:${col}" title="AHP Optimum: ${(pct*100).toFixed(0)}%"></div>
+        </div>
+        <span class="alloc-pct">${(pct*100).toFixed(0)}%</span>
+        <span class="alloc-dollar">${dollar}</span>
+        <span class="alloc-delta ${deltaClass}">${deltaLbl}</span>
+      </div>
+      <div class="alloc-ips-row">
+        <span class="alloc-ips-label">IPS: <span>${(ipsMin*100).toFixed(0)}%</span>–<span>${(ipsMax*100).toFixed(0)}%</span></span>
+        <span class="alloc-ips-label">Baseline: <span>${(basePct*100).toFixed(0)}%</span></span>
+        <span class="alloc-ips-label">Optimum: <span>${(pct*100).toFixed(0)}%</span></span>
+      </div>
     </div>`;
   }).join('');
 }
 
 function renderGrade(data) {
-  const g = data.overall_grade || '—';
+  // data may be full API response or just the result sub-object
+  const r = data.result || data;
+  const g = r.overall_grade || '—';
   document.getElementById('dbGrade').textContent = g;
   const gradeCircle = document.getElementById('gradeCircle');
   const gradeLabel  = document.getElementById('gradeLabel');
@@ -776,7 +834,7 @@ function renderGrade(data) {
     const col = g==='A'?'#10b981':g==='B'?'#3b82f6':g==='C'?'#f59e0b':'#ef4444';
     gradeCircle.style.borderColor = col; gradeCircle.style.color = col;
   }
-  const cr = data.consistency_results || {};
+  const cr = r.consistency_results || {};
   const avgCR = Object.keys(cr).length
     ? (Object.values(cr).reduce((s,v) => s + v.CR, 0) / Object.keys(cr).length).toFixed(4)
     : '—';
