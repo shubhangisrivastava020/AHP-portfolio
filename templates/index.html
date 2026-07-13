@@ -42,7 +42,7 @@
       background: rgba(15,23,42,.7); border: 1px solid rgba(30,41,59,.9);
       border-radius: 7px; padding: 4px 11px;
     }
-    .usage-lbl { font-size: .62rem; color: #334155; font-weight: 600; }
+    .usage-lbl { font-size: .62rem; color: #64748b; font-weight: 600; }
     .usage-track { width: 60px; height: 4px; background: rgba(30,41,59,.9); border-radius: 2px; }
     .usage-fill { height: 100%; border-radius: 2px; background: linear-gradient(90deg,#10b981,#3b82f6); transition: width .4s; }
     .usage-num { font-size: .62rem; color: #475569; font-weight: 700; min-width: 32px; }
@@ -69,9 +69,10 @@
 
     .dsec { padding: 14px 16px; border-bottom: 1px solid rgba(20,30,50,.9); }
     .dsec-title {
-      font-size: .58rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase;
-      color: #2d3e5a; margin-bottom: 10px;
+      font-size: .62rem; font-weight: 800; letter-spacing: .10em; text-transform: uppercase;
+      color: #4a6080; margin-bottom: 10px;
     }
+    .dsec-hint { font-size: .6rem; color: #334155; margin-top: -6px; margin-bottom: 10px; line-height: 1.4; }
 
     /* Fund profile card */
     .fund-card {
@@ -85,7 +86,7 @@
       background: rgba(10,18,36,.7); border: 1px solid rgba(20,34,60,.9);
       border-radius: 7px; padding: 8px 10px;
     }
-    .fstat-lbl { font-size: .55rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #2d3e5a; margin-bottom: 3px; }
+    .fstat-lbl { font-size: .55rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #475569; margin-bottom: 3px; }
     .fstat-val { font-size: .96rem; font-weight: 800; }
     .fstat-val.gold  { color: var(--lb-gold); }
     .fstat-val.warn  { color: #f59e0b; }
@@ -170,7 +171,7 @@
     .alloc-bars { display: flex; flex-direction: column; gap: 10px; }
     .alloc-row { display: flex; flex-direction: column; gap: 3px; }
     .alloc-row-top { display: flex; align-items: center; gap: 8px; }
-    .alloc-name { font-size: .65rem; color: #94a3b8; width: 78px; flex-shrink: 0; font-weight: 600; }
+    .alloc-name { font-size: .63rem; color: #94a3b8; width: 100px; flex-shrink: 0; font-weight: 600; }
     .alloc-range-wrap { flex: 1; position: relative; height: 10px; }
     .alloc-range-track { position: absolute; inset: 0; background: rgba(15,25,46,.8); border-radius: 5px; }
     .alloc-ips-zone { position: absolute; top: 0; height: 100%; background: rgba(201,168,76,.09); border-left: 1px solid rgba(201,168,76,.28); border-right: 1px solid rgba(201,168,76,.28); border-radius: 2px; }
@@ -183,7 +184,7 @@
     .alloc-delta.dpos { background: rgba(16,185,129,.12); color: #10b981; }
     .alloc-delta.dneg { background: rgba(239,68,68,.12); color: #f87171; }
     .alloc-delta.dflt { background: rgba(148,163,184,.08); color: #64748b; }
-    .alloc-ips-row { display: flex; gap: 14px; padding-left: 86px; }
+    .alloc-ips-row { display: flex; gap: 14px; padding-left: 108px; }
     .alloc-ips-label { font-size: .54rem; color: #334155; }
     .alloc-ips-label span { color: #c9a84c; }
     .alloc-loading { font-size: .72rem; color: #2d3e5a; text-align: center; padding: 16px 0; }
@@ -400,12 +401,12 @@
     </div>
   </div>
   <div class="hdr-mid">
-    <div class="hdr-badge gold">AHP v4.0</div>
+    <div class="hdr-badge gold" title="Analytic Hierarchy Process — our AI allocation engine">AI Model v4</div>
     <div class="hdr-badge live" id="hdrStatus">● Ready</div>
   </div>
   <div class="hdr-right">
     <div class="usage-wrap" title="AI advisor messages used this hour">
-      <span class="usage-lbl">Session</span>
+      <span class="usage-lbl">AI Messages</span>
       <div class="usage-track"><div class="usage-fill" id="usageFill" style="width:0%"></div></div>
       <span class="usage-num" id="usageNum">0 / 20</span>
     </div>
@@ -452,9 +453,9 @@
             <div class="fstat-sub">Target: 90%</div>
           </div>
           <div class="fstat">
-            <div class="fstat-lbl">AHP Grade</div>
+            <div class="fstat-lbl">AI Score</div>
             <div class="fstat-val green" id="dbGrade">—</div>
-            <div class="fstat-sub">Consistency</div>
+            <div class="fstat-sub">Accuracy</div>
           </div>
         </div>
         <div class="fr-bar">
@@ -491,11 +492,11 @@
     <!-- Live Allocation -->
     <div class="dsec">
       <div class="dsec-title" style="display:flex;align-items:center;justify-content:space-between;">
-        <span>AHP Allocation Output</span>
-        <span style="display:flex;gap:10px;align-items:center;font-size:.54rem;color:#475569;font-weight:500;">
-          <span style="display:flex;align-items:center;gap:3px;"><span style="display:inline-block;width:22px;height:6px;background:rgba(201,168,76,.25);border:1px solid rgba(201,168,76,.4);border-radius:2px;"></span>IPS band</span>
-          <span style="display:flex;align-items:center;gap:3px;"><span style="display:inline-block;width:2px;height:10px;background:rgba(148,163,184,.5);border-radius:1px;"></span>Baseline</span>
-          <span style="display:flex;align-items:center;gap:3px;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#3b82f6;border:2px solid rgba(8,14,26,.9);"></span>Optimum</span>
+        <span>Recommended Allocation</span>
+        <span style="display:flex;gap:10px;align-items:center;font-size:.54rem;color:#64748b;font-weight:500;">
+          <span style="display:flex;align-items:center;gap:3px;"><span style="display:inline-block;width:22px;height:6px;background:rgba(201,168,76,.25);border:1px solid rgba(201,168,76,.4);border-radius:2px;"></span>Policy Range</span>
+          <span style="display:flex;align-items:center;gap:3px;"><span style="display:inline-block;width:2px;height:10px;background:rgba(148,163,184,.5);border-radius:1px;"></span>Long-term Target</span>
+          <span style="display:flex;align-items:center;gap:3px;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#3b82f6;border:2px solid rgba(8,14,26,.9);"></span>AI Pick</span>
         </span>
       </div>
       <div id="allocBars" class="alloc-bars" style="margin-top:10px;">
@@ -505,27 +506,28 @@
 
     <!-- AHP Consistency -->
     <div class="dsec">
-      <div class="dsec-title">Model Quality</div>
+      <div class="dsec-title">Allocation Accuracy</div>
       <div class="grade-ring" id="gradeRing" style="display:none">
         <div class="grade-circle" id="gradeCircle">—</div>
         <div class="grade-text">
           <strong id="gradeLabel">—</strong><br>
-          <span id="gradeSub" style="font-size:.65rem">Run model to see consistency</span>
+          <span id="gradeSub" style="font-size:.65rem;color:#64748b">Run model to check accuracy</span>
         </div>
       </div>
-      <div id="gradeEmpty" style="font-size:.7rem;color:#2d3e5a;text-align:center;padding:12px 0">Run model to see AHP grade</div>
+      <div id="gradeEmpty" style="font-size:.7rem;color:#475569;text-align:center;padding:12px 0">Click Run Model to check allocation accuracy</div>
     </div>
 
     <!-- Peer Benchmark -->
     <div class="dsec" style="border-bottom:none">
-      <div class="dsec-title">Benchmark Funds</div>
+      <div class="dsec-title">Compare to Major Pension Funds</div>
+      <div class="dsec-hint">Click any fund to see how Liberty Bell's allocation compares</div>
       <div class="bench-chips">
-        <button class="bench-chip" onclick="askBenchmark('CalPERS')">CalPERS</button>
-        <button class="bench-chip" onclick="askBenchmark('Ontario Teachers')">OTPP</button>
-        <button class="bench-chip" onclick="askBenchmark('APG')">APG</button>
-        <button class="bench-chip" onclick="askBenchmark('CDPQ')">CDPQ</button>
-        <button class="bench-chip" onclick="askBenchmark('NYSCRF')">NYSCRF</button>
-        <button class="bench-chip" onclick="askBenchmark('GIC Singapore')">GIC</button>
+        <button class="bench-chip" onclick="askBenchmark('CalPERS')" title="California Public Employees' Retirement System — $500B">CalPERS</button>
+        <button class="bench-chip" onclick="askBenchmark('Ontario Teachers')" title="Ontario Teachers' Pension Plan — $247B">OTPP</button>
+        <button class="bench-chip" onclick="askBenchmark('APG')" title="APG Asset Management — $600B (Netherlands)">APG</button>
+        <button class="bench-chip" onclick="askBenchmark('CDPQ')" title="Caisse de dépôt et placement du Québec — $400B">CDPQ</button>
+        <button class="bench-chip" onclick="askBenchmark('NYSCRF')" title="New York State Common Retirement Fund — $260B">NYSCRF</button>
+        <button class="bench-chip" onclick="askBenchmark('GIC Singapore')" title="Government Investment Corporation of Singapore — $800B">GIC</button>
       </div>
     </div>
 
@@ -544,10 +546,10 @@
         </div>
       </div>
       <div class="adv-hdr-right">
-        <button class="mode-pill active" id="pill-ADVISOR"  onclick="setMode('ADVISOR',this)"><span class="mode-dot"></span>Advisor</button>
-        <button class="mode-pill"        id="pill-CHALLENGE" onclick="setMode('CHALLENGE',this)"><span class="mode-dot"></span>Challenge</button>
-        <button class="mode-pill"        id="pill-AUDIT"     onclick="setMode('AUDIT',this)"><span class="mode-dot"></span>Audit</button>
-        <button class="mode-pill"        id="pill-FORECAST"  onclick="setMode('FORECAST',this)"><span class="mode-dot"></span>Forecast</button>
+        <button class="mode-pill active" id="pill-ADVISOR"  onclick="setMode('ADVISOR',this)"  title="Explains allocations in plain English"><span class="mode-dot"></span>Explain</button>
+        <button class="mode-pill"        id="pill-CHALLENGE" onclick="setMode('CHALLENGE',this)" title="Stress-tests and questions the allocation"><span class="mode-dot"></span>Question It</button>
+        <button class="mode-pill"        id="pill-AUDIT"     onclick="setMode('AUDIT',this)"     title="Verifies model accuracy and compliance"><span class="mode-dot"></span>Verify</button>
+        <button class="mode-pill"        id="pill-FORECAST"  onclick="setMode('FORECAST',this)"  title="Projects future scenarios and outcomes"><span class="mode-dot"></span>Forecast</button>
         <button class="adv-clear-btn" onclick="clearChat()">Clear</button>
       </div>
     </div>
@@ -555,12 +557,12 @@
     <!-- What makes this different strip -->
     <div class="cap-strip">
       <span class="cap-lbl">Ask AI →</span>
-      <button class="cap-btn" onclick="quickAsk('Give me the full dollar allocation for Liberty Bell: exact $B for each asset class, and flag anything outside our IPS constraints.')">💰 Full $B Allocation</button>
-      <button class="cap-btn" onclick="quickAsk('Write the portfolio rationale paragraph for the Liberty Bell Investment Committee memo. Include allocation percentages, macro scenario context, and AHP consistency grade.')">📄 Generate IC Narrative</button>
+      <button class="cap-btn" onclick="quickAsk('Give me the full dollar allocation for Liberty Bell: exact $B for each asset class, and flag anything outside our policy constraints.')">💰 Show Dollar Amounts</button>
+      <button class="cap-btn" onclick="quickAsk('Write the portfolio rationale paragraph for the Liberty Bell Board memo. Include allocation percentages, macro scenario context, and model accuracy grade.')">📄 Generate Board Report</button>
       <button class="cap-btn" onclick="quickAsk('Explain the Liberty Bell allocation in plain English for our Board of Trustees — no jargon, just why we hold what we hold.')">🏛 Explain to Trustees</button>
-      <button class="cap-btn" onclick="quickAsk('If our funded ratio drops to 75%, what allocation changes are required? Show the before/after for each asset class.')">⚠ Funded Ratio Crisis</button>
-      <button class="cap-btn" onclick="quickAsk('Under stagflation, which asset classes in our current allocation would be hurt most, and what rebalancing do the AHP weights suggest?')">🌡 Stagflation Impact</button>
-      <button class="cap-btn" onclick="quickAsk('Run a full AHP consistency audit. List every matrix, its CR value, grade, and flag anything above 0.10 that needs repair.')">🔬 CR Audit</button>
+      <button class="cap-btn" onclick="quickAsk('If our funded ratio drops to 75%, what allocation changes are required? Show the before/after for each asset class.')">⚠ Funding Crisis Plan</button>
+      <button class="cap-btn" onclick="quickAsk('Under stagflation, which asset classes in our current allocation would be hurt most, and what rebalancing does the AI suggest?')">🌡 Stagflation Impact</button>
+      <button class="cap-btn" onclick="quickAsk('Run a full model accuracy check. List every criteria matrix, its score, and flag anything that needs attention.')">🔬 Model Quality Check</button>
     </div>
 
     <!-- Rate limit banner -->
@@ -656,8 +658,8 @@
           <div class="wiz-q-hdr">
             <div class="wiz-q-num">5</div>
             <div>
-              <div class="wiz-q-title">What does your IPS allow in alternatives?</div>
-              <div class="wiz-q-sub">Real estate, commodities, and private credit change the AHP allocation significantly. What's actually permitted — not what you wish were permitted.</div>
+              <div class="wiz-q-title">What investment types does your policy allow?</div>
+              <div class="wiz-q-sub">Real estate, commodities, and private investments change the allocation significantly. What's actually permitted by your fund's rules — not what you wish were permitted.</div>
             </div>
           </div>
           <div class="wiz-opts">
@@ -678,12 +680,12 @@
     <div class="input-bar">
       <div class="input-row">
         <textarea class="chat-ta" id="chatInput"
-          placeholder="Ask about allocations, scenario impacts, funded ratio stress tests, IC narrative, CalPERS comparison…"
+          placeholder="Ask anything — e.g. 'Why are we holding so many bonds?' or 'What happens if markets drop 30%?' or 'How do we compare to CalPERS?'"
           rows="2"
           onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg()}"></textarea>
         <button class="send-btn" id="sendBtn" onclick="sendMsg()">Send →</button>
       </div>
-      <div class="input-hint">Shift+Enter for new line · Run Model first for data-backed answers · All responses cite exact AHP figures</div>
+      <div class="input-hint">Press Enter to send · Run Model first for number-backed answers · Shift+Enter for a new line</div>
     </div>
 
     <!-- Own-key escape hatch -->
@@ -780,9 +782,12 @@ function renderAlloc(data) {
 
   container.innerHTML = sorted.map(([asset, pct]) => {
     const col   = ASSET_COLORS[asset] || '#6366f1';
-    const short = asset.replace(' Stocks','').replace(' Bonds','')
-                       .replace('Government','Govt').replace('Corporate','Corp')
-                       .replace('Money Market','MM').replace('Commodities','Cmdty');
+    const NAME_MAP = {
+      'Large Stocks':'Large Cap Equity','Small Stocks':'Small Cap Equity',
+      'Government Bonds':'Govt Bonds','Corporate Bonds':'Corp Bonds',
+      'Real Estate':'Real Estate','Money Market':'Cash & MM','Commodities':'Commodities',
+    };
+    const short = NAME_MAP[asset] || asset;
     const dollar  = d[asset] != null ? `$${d[asset].toFixed(2)}B` : `$${(pct*aum).toFixed(2)}B`;
     const ips     = cons[asset] || [0, SCALE];
     const ipsMin  = ips[0], ipsMax = ips[1];
@@ -805,17 +810,17 @@ function renderAlloc(data) {
           <div class="alloc-range-track"></div>
           <div class="alloc-ips-zone"   style="left:${zoneL}%;width:${zoneW}%"></div>
           <div class="alloc-fill2"      style="width:${fillW}%;background:${col}"></div>
-          <div class="alloc-baseline-mk" style="left:${basePos}%" title="Baseline (Steady Growth): ${(basePct*100).toFixed(0)}%"></div>
-          <div class="alloc-opt-dot"    style="left:${optPos}%;background:${col}" title="AHP Optimum: ${(pct*100).toFixed(0)}%"></div>
+          <div class="alloc-baseline-mk" style="left:${basePos}%" title="Long-term target (Steady Growth): ${(basePct*100).toFixed(0)}%"></div>
+          <div class="alloc-opt-dot"    style="left:${optPos}%;background:${col}" title="AI recommended: ${(pct*100).toFixed(0)}%"></div>
         </div>
         <span class="alloc-pct">${(pct*100).toFixed(0)}%</span>
         <span class="alloc-dollar">${dollar}</span>
-        <span class="alloc-delta ${deltaClass}">${deltaLbl}</span>
+        <span class="alloc-delta ${deltaClass}" title="vs long-term target">${deltaLbl}</span>
       </div>
       <div class="alloc-ips-row">
-        <span class="alloc-ips-label">IPS: <span>${(ipsMin*100).toFixed(0)}%</span>–<span>${(ipsMax*100).toFixed(0)}%</span></span>
-        <span class="alloc-ips-label">Baseline: <span>${(basePct*100).toFixed(0)}%</span></span>
-        <span class="alloc-ips-label">Optimum: <span>${(pct*100).toFixed(0)}%</span></span>
+        <span class="alloc-ips-label">Policy range: <span>${(ipsMin*100).toFixed(0)}%</span>–<span>${(ipsMax*100).toFixed(0)}%</span></span>
+        <span class="alloc-ips-label">Long-term target: <span>${(basePct*100).toFixed(0)}%</span></span>
+        <span class="alloc-ips-label">AI pick: <span>${(pct*100).toFixed(0)}%</span></span>
       </div>
     </div>`;
   }).join('');
@@ -838,8 +843,9 @@ function renderGrade(data) {
   const avgCR = Object.keys(cr).length
     ? (Object.values(cr).reduce((s,v) => s + v.CR, 0) / Object.keys(cr).length).toFixed(4)
     : '—';
-  if (gradeLabel) gradeLabel.textContent = `Grade ${g}`;
-  if (gradeSub)   gradeSub.textContent   = `Avg CR ${avgCR} · ${Object.keys(cr).length} matrices`;
+  const gradeDesc = g==='A' ? 'Highly consistent — fully trustworthy' : g==='B' ? 'Good — minor inconsistencies' : g==='C' ? 'Acceptable — review recommended' : 'Needs attention — recheck inputs';
+  if (gradeLabel) gradeLabel.textContent = `Score ${g} — ${gradeDesc}`;
+  if (gradeSub)   gradeSub.textContent   = `${Object.keys(cr).length} criteria checked · avg accuracy ${(1 - parseFloat(avgCR)).toFixed(2) * 100 | 0}%`;
   document.getElementById('gradeRing').style.display = 'flex';
   document.getElementById('gradeEmpty').style.display = 'none';
 }
