@@ -434,16 +434,6 @@ def forecast():
         return jsonify({'error': str(e), 'traceback': traceback.format_exc()}), 500
 
 
-@app.route('/api/debug/env')
-def debug_env():
-    key = os.environ.get('ANTHROPIC_API_KEY', '')
-    return jsonify({
-        'key_set': bool(key),
-        'key_prefix': key[:10] + '...' if key else '',
-        'all_keys': [k for k in os.environ if 'ANTHROP' in k.upper() or 'API' in k.upper()],
-    })
-
-
 @app.route('/api/sensitivity', methods=['POST'])
 def sensitivity():
     data   = request.json or {}
